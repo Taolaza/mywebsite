@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoT Farm Dashboard — ESP32-C3 x4 + ESP8266 Gateway</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#141c2e; --panel2:#0f1727; --border:#243248;
+    --blue:#3b9dff; --teal:#22d3c4; --amber:#f6b93b; --red:#ef4b4b; --green:#3fbf6f;
+    --text:#e7ecf5; --sub:#8ea0bd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#0a0f1a;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:600}
+  .brand .chip{width:26px;height:26px;border-radius:6px;background:var(--blue)}
+  .hdr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{border:1px solid var(--border);background:#111a2c;color:var(--text);padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#04203f}
+  .btn.warn{background:var(--amber);border-color:var(--amber);color:#402a00}
+  .btn.danger{background:var(--red);border-color:var(--red);color:#3a0000}
+  .status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
+  .status-dot.off{background:var(--red)}
+  main{padding:24px 28px;max-width:1400px;margin:0 auto}
+
+  .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .tab{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);cursor:pointer;font-size:14px;color:var(--sub)}
+  .tab.active{background:var(--panel);color:var(--text);border-color:var(--blue)}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+  @media(max-width:1100px){.grid3{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.grid3,.grid4{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
+  .card h3{margin:0 0 10px;font-size:13px;letter-spacing:.3px;color:var(--sub);font-weight:600}
+  .card .value{font-size:34px;font-weight:700;margin:2px 0}
+  .card .unit{color:var(--sub);font-size:13px}
+
+  .node-card{border-top:3px solid var(--border)}
+  .node-card.online{border-top-color:var(--green)}
+  .node-card.offline{border-top-color:var(--red);opacity:.6}
+  .node-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .node-title{font-weight:600;font-size:15px}
+  .node-badge{font-size:11px;padding:3px 8px;border-radius:20px;background:#0d3320;color:var(--green)}
+  .node-badge.off{background:#3a1414;color:var(--red)}
+  .metric-row{display:flex;justify-content:space-between;font-size:13px;color:var(--sub);padding:4px 0;border-bottom:1px dashed var(--border)}
+  .metric-row span.v{color:var(--text);font-weight:600}
+  .node-actions{display:flex;gap:8px;margin-top:12px}
+  .node-actions .btn{flex:1;font-size:12px;padding:7px 6px;text-align:center}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+  .panel-title{font-size:16px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+
+  .relay-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  @media(max-width:900px){.relay-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:480px){.relay-grid{grid-template-columns:repeat(2,1fr)}}
+  .relay-cell{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+  .relay-cell h4{margin:0 0 8px;font-size:13px;color:var(--sub)}
+  .relay-toggle{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#1a2436;color:var(--sub);font-weight:700;cursor:pointer;letter-spacing:1px}
+  .relay-toggle.on{background:var(--green);border-color:var(--green);color:#042b13}
+  .mode-pill{display:flex;margin-top:8px;border:1px solid var(--border);border-radius:20px;overflow:hidden;font-size:11px}
+  .mode-pill div{flex:1;padding:5px 0;cursor:pointer;color:var(--sub)}
+  .mode-pill div.active{background:var(--blue);color:#04203f}
+  .gear{margin-top:8px;font-size:11px;color:var(--sub);cursor:pointer;text-decoration:underline}
+
+  .settings-box{margin-top:10px;text-align:left;font-size:12px;background:#0c1424;border:1px solid var(--border);border-radius:8px;padding:10px;display:none}
+  .settings-box.show{display:block}
+  .settings-box label{display:block;color:var(--sub);margin-top:8px;margin-bottom:3px}
+  .settings-box select,.settings-box input{width:100%;background:#111a2c;border:1px solid var(--border);color:var(--text);padding:5px 6px;border-radius:6px;font-size:12px}
+  .settings-box .row2{display:flex;gap:6px}
+  .settings-box .save{margin-top:10px;width:100%;background:var(--blue);border:none;color:#04203f;padding:7px;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px}
+
+  .chart-wrap{height:220px;position:relative}
+  canvas{width:100%!important;height:100%!important}
+
+  .conn-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);margin-top:6px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:30px}
+
+  /* ---------------- Statistics Pro ---------------- */
+  .stats-header{background:linear-gradient(135deg,#241a33,#161b2e);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center}
+  .stats-title{font-size:22px;font-weight:800;color:var(--text)}
+  .stats-sub{font-size:13px;color:var(--sub);margin-top:4px;margin-bottom:16px}
+  .pill-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .pill{background:#111a2c;color:var(--sub);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border)}
+  .pill.active{background:var(--blue);color:#04203f;border-color:var(--blue)}
+  .node-pill.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+  .grid-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:900px){.grid-stats{grid-template-columns:1fr}}
+  .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .stat-card h4{margin:0 0 10px;font-size:14px;font-weight:600}
+  .ai-btn{width:100%;margin-top:10px;background:#152238;color:#7db8ff;border:1px solid var(--border);padding:10px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
+  .ai-result{margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--text);background:#0c1424;border:1px solid var(--border);border-radius:8px;padding:10px;display:none}
+  .ai-result.show{display:block}
+  .ai-result .disclaimer{color:var(--sub);font-size:11px;margin-top:6px;display:block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="chip"></span> IoT Farm Gateway <span style="color:var(--sub);font-weight:400;font-size:13px">ESP32-C3 x4 + ESP8266</span></div>
+  <div class="hdr-actions">
+    <span style="font-size:13px;color:var(--sub)"><span class="status-dot" id="gwDot"></span><span id="gwStatus">กำลังเชื่อมต่อ...</span></span>
+    <span id="clockBox" style="font-size:13px;color:var(--text);font-weight:600;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#111a2c">🕒 <span id="clockDate" style="color:var(--sub);font-weight:400">--/--/----</span> <span id="clockTime">--:--:--</span></span>
+    <input id="gwIp" placeholder="Gateway IP เช่น 192.168.1.50" class="btn" style="width:190px">
+    <button class="btn primary" onclick="connectGateway()">เชื่อมต่อ</button>
+    <button class="btn warn" onclick="wifiResetGateway()">Reset WiFi (Gateway)</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview" onclick="showTab('overview')">ภาพรวม</div>
+    <div class="tab" data-tab="relay" onclick="showTab('relay')">ควบคุมรีเลย์ (6 ช่อง)</div>
+    <div class="tab" data-tab="chart" onclick="showTab('chart')">กราฟเรียลไทม์</div>
+    <div class="tab" data-tab="stats" onclick="showTab('stats')">📈 สถิติ (Statistics Pro)</div>
+    <div class="tab" data-tab="wifi" onclick="showTab('wifi')">ตั้งค่า WiFi ทุกบอร์ด</div>
+  </div>
+
+  <!-- ================= OVERVIEW ================= -->
+  <div id="tab-overview">
+    <div class="grid4" id="summaryCards">
+      <div class="card"><h3>อุณหภูมิเฉลี่ย (4 บอร์ด)</h3><div class="value" id="sumTemp" style="color:var(--blue)">--</div><div class="unit">°C</div></div>
+      <div class="card"><h3>ความชื้นอากาศเฉลี่ย</h3><div class="value" id="sumHum" style="color:var(--teal)">--</div><div class="unit">% RH</div></div>
+      <div class="card"><h3>VPD เฉลี่ย</h3><div class="value" id="sumVpd" style="color:var(--amber)">--</div><div class="unit">kPa</div></div>
+      <div class="card"><h3>ความชื้นดินเฉลี่ย</h3><div class="value" id="sumSoil" style="color:var(--green)">--</div><div class="unit">%</div></div>
+    </div>
+
+    <div class="panel-title" style="margin-bottom:10px">สถานะบอร์ดเซนเซอร์ (ESP32-C3)</div>
+    <div class="grid4" id="nodeCards"></div>
+  </div>
+
+  <!-- ================= RELAY ================= -->
+  <div id="tab-relay" style="display:none">
+    <div class="panel">
+      <div class="panel-title">Manual Output Control (Relay/Valve) — 6 ช่อง</div>
+      <div class="relay-grid" id="relayGrid"></div>
+    </div>
+  </div>
+
+  <!-- ================= CHART ================= -->
+  <div id="tab-chart" style="display:none">
+    <div class="panel">
+      <div class="panel-title">
+        <span>กราฟรายบอร์ด (Node 1-4)</span>
+        <select id="chartMetric" onchange="switchChartMetric()" style="background:#111a2c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">
+          <option value="temp">อุณหภูมิ (°C)</option>
+          <option value="hum">ความชื้นอากาศ (%)</option>
+          <option value="vpd">VPD (kPa)</option>
+          <option value="soil">ความชื้นดิน (%)</option>
+        </select>
+      </div>
+      <div class="chart-wrap"><canvas id="envChartNodes"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span>ค่าเฉลี่ยรวมทั้ง 4 บอร์ด</span></div>
+      <div class="chart-wrap"><canvas id="envChartAvg"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ================= STATISTICS PRO ================= -->
+  <div id="tab-stats" style="display:none">
+    <div class="stats-header">
+      <div class="stats-title">📈 Statistics Pro</div>
+      <div class="stats-sub">กราฟวิเคราะห์แนวโน้มฟาร์ม</div>
+      <div class="pill-row">
+        <div class="pill" data-range="1h" onclick="setStatsRange('1h')">1 ชม.</div>
+        <div class="pill" data-range="24h" onclick="setStatsRange('24h')">24 ชม.</div>
+        <div class="pill" data-range="7d" onclick="setStatsRange('7d')">7 วัน</div>
+        <div class="pill" data-range="1m" onclick="setStatsRange('1m')">1 เดือน</div>
+        <div class="pill" data-range="1y" onclick="setStatsRange('1y')">1 ปี</div>
+      </div>
+      <div class="pill-row" style="margin-top:8px">
+        <div class="pill node-pill" data-node="1" onclick="setStatsNode('1')">Node 1</div>
+        <div class="pill node-pill" data-node="2" onclick="setStatsNode('2')">Node 2</div>
+        <div class="pill node-pill" data-node="3" onclick="setStatsNode('3')">Node 3</div>
+        <div class="pill node-pill" data-node="4" onclick="setStatsNode('4')">Node 4</div>
+        <div class="pill node-pill" data-node="avg" onclick="setStatsNode('avg')">ค่าเฉลี่ยรวม</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-title"><span>Google Apps Script URL</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="gasUrlInput" placeholder="วาง URL ของ Google Apps Script (ลงท้ายด้วย /exec)" class="btn" style="flex:1;min-width:260px">
+        <button class="btn primary" onclick="connectGasUrl()">เชื่อมต่อ</button>
+      </div>
+      <div id="gasStatus" style="font-size:12px;color:var(--sub);margin-top:8px">ยังไม่ได้เชื่อมต่อ — ใส่ URL เดียวกับที่ตั้งไว้ในตัวแปร GAS_URL ของ Gateway</div>
+    </div>
+
+    <div class="grid-stats">
+      <div class="stat-card">
+        <h4>🌡️ อุณหภูมิ (°C)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statTemp"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('temp')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-temp"></div>
+      </div>
+      <div class="stat-card">
+        <h4>💧 ความชื้นอากาศ (%)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statHum"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('hum')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-hum"></div>
+      </div>
+      <div class="stat-card">
+        <h4>🪴 ความชื้นดิน (%)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statSoil"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('soil')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-soil"></div>
+      </div>
+      <div class="stat-card">
+        <h4>⚡ ความเครียดพืช (VPD &amp; SVP)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statVpdSvp"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('vpdsvp')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-vpdsvp"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= WIFI ================= -->
+  <div id="tab-wifi" style="display:none">
+    <div class="grid3" id="wifiCards"></div>
+
+    <div class="panel">
+      <div class="panel-title">วิธีตั้งค่า WiFi ใหม่ (WiFiManager)</div>
+      <p style="color:var(--sub);font-size:13px;line-height:1.7">
+        กดปุ่ม "ตั้งค่า WiFi ใหม่" ของบอร์ดที่ต้องการ หรือกดปุ่มจริงที่ตัวบอร์ดค้างไว้ 5 วินาที
+        บอร์ดจะรีสตาร์ทและเปิด Access Point ชื่อ <b>ESP32C3-Node-X</b> (สำหรับ node) หรือ
+        <b>ESP8266-Gateway</b> (สำหรับ gateway) ให้เชื่อมต่อจากมือถือ/คอมพิวเตอร์แล้วเลือก
+        WiFi บ้านที่ต้องการใช้งานผ่านหน้าเว็บที่เปิดขึ้นมาอัตโนมัติ
+      </p>
+    </div>
+  </div>
+
+  <footer>ESP32-C3 Sensor Nodes (x4) → ESP-NOW → ESP8266 Gateway → Google Sheets + Dashboard</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const RELAY_LABELS = ["ปั๊มน้ำโซน 1","ปั๊มน้ำโซน 2","พัดลมระบายอากาศ","ไฟปลูกพืช (Grow Light)","ม่านบังแดด","สำรอง"];
+let gatewayBase = "";
+let demoMode = true;
+let state = null;
+
+function showTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
+  ["overview","relay","chart","stats","wifi"].forEach(id=>{
+    document.getElementById("tab-"+id).style.display = (id===name)?"block":"none";
+  });
+  if(name==="stats") refreshStats();
+}
+
+function connectGateway(){
+  const ip = document.getElementById("gwIp").value.trim();
+  if(ip){ gatewayBase = "http://"+ip; demoMode = false; }
+  else { gatewayBase=""; demoMode = true; }
+  fetchData();
+  startHeartbeat();
+}
+
+// ---------------- Heartbeat: ป้องกันรีเลย์ค้างเปิดถ้าปิดหน้า Dashboard ทิ้งไว้ ----------------
+// ส่งสัญญาณบอก Gateway ทุก 10 วิว่า "หน้านี้ยังเปิดอยู่" ถ้า Gateway ไม่ได้รับ
+// เกิน 30 วิ (ปิดแท็บ/เบราว์เซอร์ค้าง/หลุดเน็ต) จะปิดรีเลย์โหมด Manual ให้เองอัตโนมัติ
+let heartbeatTimer = null;
+function startHeartbeat(){
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  heartbeatTimer = null;
+  if (demoMode) return;   // โหมดตัวอย่างไม่มี Gateway จริงให้ส่งหา
+  heartbeatTimer = setInterval(()=>{
+    fetch(gatewayBase + "/api/heartbeat", {method:"POST"}).catch(()=>{});
+  }, 10000);
+}
+
+// เมื่อปิดแท็บ/ปิดเบราว์เซอร์แบบปกติ ให้แจ้ง Gateway ปิดรีเลย์ Manual ทันที ไม่ต้องรอ 30 วิ
+window.addEventListener("beforeunload", ()=>{
+  if (!demoMode && gatewayBase && navigator.sendBeacon) {
+    navigator.sendBeacon(gatewayBase + "/api/close");
+  }
+});
+
+function wifiResetGateway(){
+  if(demoMode){ alert("โหมดตัวอย่าง: ใส่ IP ของ ESP8266 Gateway ก่อนเพื่อสั่งงานจริง"); return; }
+  fetch(gatewayBase+"/api/wifi/reset",{method:"POST"}).then(()=>alert("สั่งรีเซ็ต WiFi ของ Gateway แล้ว"));
+}
+
+function nodeWifiReset(id){
+  alert("กดปุ่มบนตัวบอร์ด Node "+id+" ค้างไว้ 5 วินาที เพื่อเข้าสู่โหมดตั้งค่า WiFi (AP: ESP32C3-Node-"+id+")");
+}
+
+// ---------------- ดึงข้อมูลจริงจาก Gateway หรือใช้ demo mock ----------------
+async function fetchData(){
+  if(!demoMode){
+    try{
+      const res = await fetch(gatewayBase+"/api/data",{cache:"no-store"});
+      state = await res.json();
+      setGwStatus(true);
+    }catch(e){
+      setGwStatus(false);
+      return;
+    }
+  } else {
+    state = mockData();
+    setGwStatus(true,"โหมดตัวอย่าง (demo)");
+  }
+  render();
+}
+
+function setGwStatus(ok,label){
+  document.getElementById("gwDot").classList.toggle("off",!ok);
+  document.getElementById("gwStatus").textContent = label || (ok ? "เชื่อมต่อ Gateway สำเร็จ" : "ขาดการเชื่อมต่อ Gateway");
+}
+
+// ---------------- นาฬิกา: ใช้เวลาที่ซิงก์ NTP จาก Gateway เป็นหลัก ----------------
+// ระหว่างรอข้อมูลรอบถัดไป (ทุก 5 วิ) จะเดินนาฬิกาต่อเองด้วย setInterval ทุก 1 วิ
+// เพื่อให้ตัวเลขไม่ค้าง แล้วพอ fetch รอบใหม่มาค่อย sync ให้ตรงกับ Gateway อีกที
+let clockBase = null;      // เวลา (ms) ของ Gateway ที่ fetch มาล่าสุด
+let clockBaseAt = 0;       // เวลาบนเบราว์เซอร์ตอนที่ fetch สำเร็จ (ใช้คำนวณส่วนต่าง)
+
+// แปลงวันที่จาก "YYYY-MM-DD" (รูปแบบที่ Gateway ส่งมา ใช้เก็บใน Google Sheets ด้วย)
+// เป็น "DD-MM-YYYY" สำหรับแสดงผลบน Dashboard เท่านั้น ไม่กระทบข้อมูลที่บันทึกจริง
+function formatDateDMY(dateStr){
+  if(!dateStr) return "";
+  const parts = dateStr.split("-");
+  if(parts.length !== 3) return dateStr;
+  const [y, m, d] = parts;
+  return `${d}-${m}-${y}`;
+}
+
+function syncClockFromServer(timeStr, dateStr){
+  if(!timeStr || timeStr === "--:--:--"){
+    document.getElementById("clockTime").textContent = "--:--:--";
+    document.getElementById("clockDate").textContent = dateStr ? formatDateDMY(dateStr) : "--/--/----";
+    clockBase = null;
+    return;
+  }
+  const [h,m,s] = timeStr.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h,m,s,0);
+  clockBase = d.getTime();
+  clockBaseAt = Date.now();
+  document.getElementById("clockDate").textContent = formatDateDMY(dateStr);
+}
+
+function tickClock(){
+  if(clockBase === null) return;
+  const now = new Date(clockBase + (Date.now() - clockBaseAt));
+  document.getElementById("clockTime").textContent = now.toTimeString().slice(0,8);
+}
+setInterval(tickClock, 1000);
+
+function mockData(){
+  const now = new Date();
+  const nowStr = now.toTimeString().slice(0,8);
+  const nodes = [1,2,3,4].map(i=>{
+    const t = 24+Math.random()*4, h=55+Math.random()*15;
+    return {id:i, online: i!==4, temp:t, hum:h, vpd:(0.61*Math.exp(17.27*t/(t+237.3))*(1-h/100)), soil: 10+Math.random()*40, lastUpdate: i!==4 ? nowStr : "--:--:--"};
+  });
+  const online = nodes.filter(n=>n.online);
+  const avg = k => online.reduce((a,n)=>a+n[k],0)/online.length;
+  if(!window._relayState) window._relayState = RELAY_LABELS.map((_,i)=>({state:i===0, mode: i<2?"auto":"manual", autoSub:"sensor", min:30,max:70}));
+  return {
+    wifi:true, onlineCount: online.length, nodes,
+    average:{temp:avg("temp"),hum:avg("hum"),vpd:avg("vpd"),soil:avg("soil")},
+    relays: window._relayState.map((r,i)=>({ch:i+1,...r})),
+    time: nowStr,
+    date: now.toISOString().slice(0,10)
+  };
+}
+
+function render(){
+  if(!state) return;
+  syncClockFromServer(state.time, state.date);
+  document.getElementById("sumTemp").textContent = state.average.temp.toFixed(1);
+  document.getElementById("sumHum").textContent  = state.average.hum.toFixed(1);
+  document.getElementById("sumVpd").textContent  = state.average.vpd.toFixed(2);
+  document.getElementById("sumSoil").textContent = state.average.soil.toFixed(1);
+
+  const nc = document.getElementById("nodeCards");
+  nc.innerHTML = state.nodes.map(n=>`
+    <div class="card node-card ${n.online?'online':'offline'}">
+      <div class="node-head">
+        <span class="node-title">Node ${n.id}</span>
+        <span class="node-badge ${n.online?'':'off'}">${n.online?'ONLINE':'OFFLINE'}</span>
+      </div>
+      <div class="metric-row"><span>อุณหภูมิ</span><span class="v">${n.temp.toFixed(1)} °C</span></div>
+      <div class="metric-row"><span>ความชื้นอากาศ</span><span class="v">${n.hum.toFixed(1)} %</span></div>
+      <div class="metric-row"><span>VPD</span><span class="v">${n.vpd.toFixed(2)} kPa</span></div>
+      <div class="metric-row" style="border-bottom:none"><span>ความชื้นดิน</span><span class="v">${n.soil.toFixed(1)} %</span></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:6px">อัปเดตล่าสุด: ${n.lastUpdate || '--:--:--'} <span style="color:#586a89">(เวลาเดียวกับ Gateway)</span></div>
+      <div class="node-actions">
+        <button class="btn" onclick="nodeWifiReset(${n.id})">ตั้งค่า WiFi</button>
+      </div>
+    </div>`).join("");
+
+  renderRelays();
+  renderWifiCards();
+  pushChartPoint(state);
+}
+
+function renderRelays(){
+  const grid = document.getElementById("relayGrid");
+  grid.innerHTML = state.relays.map(r=>`
+    <div class="relay-cell">
+      <h4>CH ${r.ch}<br><span style="font-size:11px;color:var(--sub)">${RELAY_LABELS[r.ch-1]}</span></h4>
+      <button class="relay-toggle ${r.state?'on':''}" onclick="toggleRelay(${r.ch})">${r.state?'ON':'OFF'}</button>
+      <div class="mode-pill">
+        <div class="${r.mode==='auto'?'active':''}" onclick="setRelayMode(${r.ch},'auto')">AUTO</div>
+        <div class="${r.mode==='manual'?'active':''}" onclick="setRelayMode(${r.ch},'manual')">MANUAL</div>
+      </div>
+      <div class="gear" onclick="toggleSettings(${r.ch})">ตั้งค่าเงื่อนไข Auto</div>
+      <div class="settings-box" id="settings-${r.ch}">
+        <label>รูปแบบการทำงานอัตโนมัติ</label>
+        <select id="autoSub-${r.ch}">
+          <option value="sensor" ${r.autoSub==='sensor'?'selected':''}>ตามค่าเซนเซอร์</option>
+          <option value="schedule" ${r.autoSub==='schedule'?'selected':''}>ตามเวลา (Schedule)</option>
+          <option value="condition" ${r.autoSub==='condition'?'selected':''}>ตามเงื่อนไขสภาพแวดล้อม</option>
+        </select>
+        <div class="row2">
+          <div style="flex:1"><label>Min</label><input type="number" id="min-${r.ch}" value="${r.min}"></div>
+          <div style="flex:1"><label>Max</label><input type="number" id="max-${r.ch}" value="${r.max}"></div>
+        </div>
+        <button class="save" onclick="saveRelaySettings(${r.ch})">บันทึกการตั้งค่า</button>
+      </div>
+    </div>`).join("");
+}
+
+function toggleSettings(ch){
+  document.getElementById("settings-"+ch).classList.toggle("show");
+}
+
+function renderWifiCards(){
+  const wc = document.getElementById("wifiCards");
+  const items = [{name:"ESP8266 Gateway", ap:"ESP8266-Gateway", reset:wifiResetGateway}]
+    .concat(state.nodes.map(n=>({name:"Node "+n.id+" (ESP32-C3)", ap:"ESP32C3-Node-"+n.id, id:n.id})));
+  wc.innerHTML = items.map(it=>`
+    <div class="card">
+      <h3>${it.name}</h3>
+      <div class="conn-line"><span class="status-dot"></span> AP ตั้งค่า: ${it.ap}</div>
+      <button class="btn warn" style="margin-top:12px;width:100%" onclick="${it.id? 'nodeWifiReset('+it.id+')':'wifiResetGateway()'}">ตั้งค่า WiFi ใหม่</button>
+    </div>`).join("");
+}
+
+function toggleRelay(ch){
+  if(demoMode){
+    const r = window._relayState[ch-1]; r.state = !r.state; r.mode="manual";
+    render(); return;
+  }
+  const cur = state.relays.find(r=>r.ch===ch);
+  fetch(gatewayBase+"/api/relay",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ch, mode:"manual", state: !cur.state})})
+    .then(fetchData)
+    .catch(()=>alert("สั่งงานรีเลย์ไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+function setRelayMode(ch,mode){
+  if(demoMode){
+    window._relayState[ch-1].mode = mode; render(); return;
+  }
+  fetch(gatewayBase+"/api/relay",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ch, mode})})
+    .then(fetchData)
+    .catch(()=>alert("เปลี่ยนโหมดไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+function saveRelaySettings(ch){
+  const autoSub = document.getElementById("autoSub-"+ch).value;
+  const min = parseFloat(document.getElementById("min-"+ch).value);
+  const max = parseFloat(document.getElementById("max-"+ch).value);
+  if(demoMode){
+    Object.assign(window._relayState[ch-1], {autoSub,min,max});
+    render(); return;
+  }
+  fetch(gatewayBase+"/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ch, autoSub, min, max, sensorType:"soil", workAtMin:true})})
+    .then(fetchData)
+    .catch(()=>alert("บันทึกการตั้งค่าไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+// ---------------- กราฟ: เก็บประวัติของทุกบอร์ด + ค่าเฉลี่ยไว้ทั้งหมด ----------------
+// แล้วค่อยเลือกสร้างเส้นกราฟตามเมตริกที่ผู้ใช้เลือกจาก dropdown (ไม่ต้อง fetch ใหม่ตอนสลับ)
+// ช่องที่ 1 (chartNodes): เส้นของ Node 1-4 ตามเมตริกที่เลือก
+// ช่องที่ 2 (chartAvg): เส้นค่าเฉลี่ยรวมทั้ง 4 เมตริกพร้อมกันเสมอ (ไม่มี dropdown)
+let chartNodes, chartAvg;
+let currentMetric = "temp";
+const METRIC_LABELS = { temp:"อุณหภูมิ (°C)", hum:"ความชื้นอากาศ (%)", vpd:"VPD (kPa)", soil:"ความชื้นดิน (%)" };
+const NODE_COLORS = { 1:"#3b9dff", 2:"#22d3c4", 3:"#f6b93b", 4:"#ef4b4b" };
+
+const chartHistory = {
+  labels: [],
+  nodes: { 1:{temp:[],hum:[],vpd:[],soil:[]}, 2:{temp:[],hum:[],vpd:[],soil:[]},
+           3:{temp:[],hum:[],vpd:[],soil:[]}, 4:{temp:[],hum:[],vpd:[],soil:[]} },
+  avg: { temp:[], hum:[], vpd:[], soil:[] }
+};
+const CHART_MAX_POINTS = 30;
+
+function pushChartPoint(fullState){
+  const t = new Date().toLocaleTimeString();
+  chartHistory.labels.push(t);
+
+  fullState.nodes.forEach(n=>{
+    const metrics = ["temp","hum","vpd","soil"];
+    metrics.forEach(m=>{
+      // ถ้าบอร์ด offline ให้ใส่ null เพื่อให้กราฟเว้นช่องว่างแทนการลากเส้นค่าเดิมซ้ำ
+      chartHistory.nodes[n.id][m].push(n.online ? n[m] : null);
+    });
+  });
+  chartHistory.avg.temp.push(fullState.average.temp);
+  chartHistory.avg.hum.push(fullState.average.hum);
+  chartHistory.avg.vpd.push(fullState.average.vpd);
+  chartHistory.avg.soil.push(fullState.average.soil);
+
+  if(chartHistory.labels.length > CHART_MAX_POINTS){
+    chartHistory.labels.shift();
+    for(let i=1;i<=4;i++){ ["temp","hum","vpd","soil"].forEach(m=>chartHistory.nodes[i][m].shift()); }
+    ["temp","hum","vpd","soil"].forEach(m=>chartHistory.avg[m].shift());
+  }
+
+  updateCharts();
+}
+
+// ช่องที่ 1: เส้นของ Node 1-4 ตามเมตริกที่เลือก
+function buildNodeDatasets(metric){
+  return [1,2,3,4].map(id=>({
+    label: "Node "+id,
+    data: chartHistory.nodes[id][metric],
+    borderColor: NODE_COLORS[id],
+    tension: .3, pointRadius: 0, borderWidth: 1.5, spanGaps: false
+  }));
+}
+
+// ช่องที่ 2: ค่าเฉลี่ยรวมทั้ง 4 เมตริกพร้อมกันเสมอ
+function buildAvgDatasets(){
+  return [
+    {label:"Temp (°C)",  data:chartHistory.avg.temp, borderColor:"#3b9dff", tension:.3, pointRadius:0, borderWidth:1.5},
+    {label:"Humidity (%)",data:chartHistory.avg.hum,  borderColor:"#22d3c4", tension:.3, pointRadius:0, borderWidth:1.5},
+    {label:"VPD (kPa)",  data:chartHistory.avg.vpd,  borderColor:"#f6b93b", tension:.3, pointRadius:0, borderWidth:1.5},
+    {label:"Soil (%)",   data:chartHistory.avg.soil, borderColor:"#3fbf6f", tension:.3, pointRadius:0, borderWidth:1.5}
+  ];
+}
+
+function updateCharts(){
+  if(chartNodes){
+    chartNodes.data.labels = chartHistory.labels;
+    chartNodes.data.datasets = buildNodeDatasets(currentMetric);
+    chartNodes.options.scales.y.title.text = METRIC_LABELS[currentMetric];
+    chartNodes.update();
+  }
+  if(chartAvg){
+    chartAvg.data.labels = chartHistory.labels;
+    chartAvg.data.datasets = buildAvgDatasets();
+    chartAvg.update();
+  }
+}
+
+function switchChartMetric(){
+  currentMetric = document.getElementById("chartMetric").value;
+  updateCharts();
+}
+
+function initCharts(){
+  const ctxNodes = document.getElementById("envChartNodes").getContext("2d");
+  chartNodes = new Chart(ctxNodes,{
+    type:"line",
+    data:{labels:chartHistory.labels, datasets:buildNodeDatasets(currentMetric)},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}},
+        y:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"},title:{display:true,text:METRIC_LABELS[currentMetric],color:"#8ea0bd"}}
+      },
+      plugins:{legend:{labels:{color:"#e7ecf5"}}}}
+  });
+
+  const ctxAvg = document.getElementById("envChartAvg").getContext("2d");
+  chartAvg = new Chart(ctxAvg,{
+    type:"line",
+    data:{labels:chartHistory.labels, datasets:buildAvgDatasets()},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}}, y:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}}},
+      plugins:{legend:{labels:{color:"#e7ecf5"}}}}
+  });
+}
+
+initCharts();
+fetchData();
+setInterval(fetchData, 5000);
+
+// =====================================================================
+// Statistics Pro: กราฟย้อนหลังของ Node 1-4 / ค่าเฉลี่ยรวม ตามช่วงเวลาที่เลือก
+// ดึงข้อมูลตรงจาก Google Apps Script (ไม่ผ่าน Gateway เพราะ Gateway ไม่ได้
+// เก็บประวัติระยะยาว) — ต้องใส่ URL เดียวกับ GAS_URL ในโค้ด ESP8266 ก่อน
+// =====================================================================
+let gasUrl = "";
+let statsRange = "1h";
+let statsNode = "1";
+let statsData = { labels:[], temp:[], hum:[], vpd:[], soil:[], svp:[] };
+let statTempChart, statHumChart, statSoilChart, statVpdSvpChart;
+
+function connectGasUrl(){
+  const url = document.getElementById("gasUrlInput").value.trim();
+  gasUrl = url;
+  const statusEl = document.getElementById("gasStatus");
+  if (!url) {
+    statusEl.textContent = "ยังไม่ได้เชื่อมต่อ — ใส่ URL เดียวกับที่ตั้งไว้ในตัวแปร GAS_URL ของ Gateway";
+    refreshStats();
+    return;
+  }
+  statusEl.textContent = "กำลังทดสอบการเชื่อมต่อ...";
+  fetch(url).then(r=>r.json()).then(()=>{
+    statusEl.textContent = "✅ เชื่อมต่อ Google Apps Script สำเร็จ";
+    refreshStats();
+  }).catch(()=>{
+    statusEl.textContent = "❌ เชื่อมต่อไม่สำเร็จ (เช็ค URL หรือว่า Deploy เป็น \"Anyone\" หรือยัง) — ใช้ข้อมูลตัวอย่างแทนไปก่อน";
+    refreshStats();
+  });
+}
+
+function setStatsRange(r){
+  statsRange = r;
+  document.querySelectorAll('.pill[data-range]').forEach(p=>p.classList.toggle('active', p.dataset.range===r));
+  refreshStats();
+}
+function setStatsNode(n){
+  statsNode = n;
+  document.querySelectorAll('.pill[data-node]').forEach(p=>p.classList.toggle('active', p.dataset.node===n));
+  refreshStats();
+}
+
+// ตั้งค่าเริ่มต้นให้ปุ่ม "1 ชม." และ "Node 1" เป็นค่า active ตอนเปิดหน้า
+function initStatsPills(){
+  document.querySelectorAll('.pill[data-range]').forEach(p=>p.classList.toggle('active', p.dataset.range===statsRange));
+  document.querySelectorAll('.pill[data-node]').forEach(p=>p.classList.toggle('active', p.dataset.node===statsNode));
+}
+
+async function refreshStats(){
+  if (gasUrl) {
+    try {
+      const res = await fetch(`${gasUrl}?action=history&node=${statsNode}&range=${statsRange}`);
+      statsData = await res.json();
+    } catch(e) {
+      statsData = generateMockHistory(statsRange);
+    }
+  } else {
+    statsData = generateMockHistory(statsRange);
+  }
+  renderStatCharts();
+}
+
+// สร้างข้อมูลตัวอย่างไว้พรีวิวหน้าตา ก่อนที่จะเชื่อมต่อ Google Apps Script จริง
+function generateMockHistory(range){
+  const POINTS = { "1h":12, "24h":24, "7d":7, "1m":30, "1y":12 };
+  const n = POINTS[range] || 12;
+  const labels=[], temp=[], hum=[], vpd=[], soil=[], svp=[];
+  let t=25,h=60,s=35;
+  for(let i=0;i<n;i++){
+    t += (Math.random()-0.5)*1.2; h += (Math.random()-0.5)*3; s += (Math.random()-0.5)*2;
+    const svpVal = 0.6108*Math.exp(17.27*t/(t+237.3));
+    const vpdVal = svpVal*(1-h/100);
+    labels.push(range==="1h"||range==="24h" ? `${(i).toString().padStart(2,'0')}:00` : `${i+1}`);
+    temp.push(+t.toFixed(1)); hum.push(+h.toFixed(1)); soil.push(+Math.max(0,Math.min(100,s)).toFixed(1));
+    vpd.push(+vpdVal.toFixed(2)); svp.push(+svpVal.toFixed(2));
+  }
+  return {labels,temp,hum,vpd,soil,svp};
+}
+
+function renderStatCharts(){
+  const lineOpt = (yTitle)=>({responsive:true,maintainAspectRatio:false,
+    scales:{x:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}}, y:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"},title:{display:!!yTitle,text:yTitle,color:"#8ea0bd"}}},
+    plugins:{legend:{display:false}}});
+
+  if(!statTempChart){
+    statTempChart = new Chart(document.getElementById("statTemp"), {type:"line",
+      data:{labels:statsData.labels, datasets:[{data:statsData.temp, borderColor:"#ef4b4b", tension:.3, pointRadius:0, borderWidth:2}]},
+      options: lineOpt("°C")});
+    statHumChart = new Chart(document.getElementById("statHum"), {type:"line",
+      data:{labels:statsData.labels, datasets:[{data:statsData.hum, borderColor:"#22d3c4", tension:.3, pointRadius:0, borderWidth:2}]},
+      options: lineOpt("%")});
+    statSoilChart = new Chart(document.getElementById("statSoil"), {type:"line",
+      data:{labels:statsData.labels, datasets:[{data:statsData.soil, borderColor:"#a1662f", tension:.3, pointRadius:0, borderWidth:2}]},
+      options: lineOpt("%")});
+    statVpdSvpChart = new Chart(document.getElementById("statVpdSvp"), {type:"line",
+      data:{labels:statsData.labels, datasets:[
+        {label:"VPD", data:statsData.vpd, borderColor:"#a855f7", tension:.3, pointRadius:0, borderWidth:2},
+        {label:"SVP", data:statsData.svp, borderColor:"#3fbf6f", tension:.3, pointRadius:0, borderWidth:2}
+      ]},
+      options: {...lineOpt("kPa"), plugins:{legend:{display:true,labels:{color:"#e7ecf5"}}}}});
+  } else {
+    statTempChart.data.labels = statsData.labels; statTempChart.data.datasets[0].data = statsData.temp; statTempChart.update();
+    statHumChart.data.labels  = statsData.labels; statHumChart.data.datasets[0].data  = statsData.hum;  statHumChart.update();
+    statSoilChart.data.labels = statsData.labels; statSoilChart.data.datasets[0].data = statsData.soil; statSoilChart.update();
+    statVpdSvpChart.data.labels = statsData.labels;
+    statVpdSvpChart.data.datasets[0].data = statsData.vpd;
+    statVpdSvpChart.data.datasets[1].data = statsData.svp;
+    statVpdSvpChart.update();
+  }
+
+  // ปิดผลวิเคราะห์เก่าทุกครั้งที่เปลี่ยนช่วงเวลา/บอร์ด เพราะข้อมูลเปลี่ยนแล้ว
+  document.querySelectorAll(".ai-result").forEach(el=>el.classList.remove("show"));
+}
+
+// ---------------- วิเคราะห์แนวโน้มกราฟ (สรุปสถิติเบื้องต้นจากข้อมูลจริง) ----------------
+// หมายเหตุสำคัญ: นี่คือการวิเคราะห์เชิงสถิติที่คำนวณในเบราว์เซอร์ ไม่ใช่การเรียกใช้
+// โมเดล AI ภายนอกจริง ๆ เพราะไฟล์นี้เป็นหน้าเว็บที่รันในเครือข่ายท้องถิ่นแบบออฟไลน์
+// การเชื่อมต่อ AI (เช่น Claude API) จำเป็นต้องมีเซิร์ฟเวอร์กลางเก็บ API key อย่างปลอดภัย
+// (เบราว์เซอร์ฝังกุญแจ API ตรง ๆ ในหน้าเว็บสาธารณะไม่ได้ เสี่ยงต่อการรั่วไหล)
+// ถ้าต้องการเชื่อมต่อ AI จริงในอนาคต แจ้งได้เลย จะช่วยต่อเข้ากับ backend ให้
+function analyzeSeries(data, unit){
+  const valid = data.filter(v=>v!==null && v!==undefined && !isNaN(v));
+  if(valid.length < 2) return "ข้อมูลยังไม่เพียงพอสำหรับวิเคราะห์แนวโน้มในช่วงเวลานี้";
+  const avg = valid.reduce((a,b)=>a+b,0)/valid.length;
+  const min = Math.min(...valid), max = Math.max(...valid);
+  const diff = valid[valid.length-1] - valid[0];
+  const range = max-min || 1;
+  const trend = Math.abs(diff) < range*0.08 ? "ค่อนข้างคงที่ตลอดช่วง"
+    : (diff>0 ? "มีแนวโน้ม<b>เพิ่มขึ้น</b>" : "มีแนวโน้ม<b>ลดลง</b>");
+  return `ค่าเฉลี่ยในช่วงนี้อยู่ที่ <b>${avg.toFixed(1)} ${unit}</b> (ต่ำสุด ${min.toFixed(1)}, สูงสุด ${max.toFixed(1)}) `
+    + `ข้อมูล${trend} จากจุดเริ่มต้นถึงล่าสุด (เปลี่ยนแปลง ${diff>=0?'+':''}${diff.toFixed(1)} ${unit})`;
+}
+
+function showAiAnalysis(key){
+  const el = document.getElementById("aiResult-"+key);
+  let html = "";
+  if(key==="temp") html = analyzeSeries(statsData.temp, "°C");
+  else if(key==="hum") html = analyzeSeries(statsData.hum, "%");
+  else if(key==="soil") html = analyzeSeries(statsData.soil, "%");
+  else if(key==="vpdsvp") html = "VPD: " + analyzeSeries(statsData.vpd, "kPa") + "<br><br>SVP: " + analyzeSeries(statsData.svp, "kPa");
+
+  el.innerHTML = html + `<span class="disclaimer">* วิเคราะห์เบื้องต้นจากค่าสถิติในข้อมูลจริงที่ดึงมา ไม่ใช่ผลจากโมเดล AI ภายนอก</span>`;
+  el.classList.add("show");
+}
+
+initStatsPills();
+</script>
+</body>
+</html>
