@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IoT Farm Dashboard — ESP32-C3 x4 + ESP8266 Gateway</title>
+
+<!-- ============ PWA: ทำให้ติดตั้งเป็น "แอป" บนมือถือ/แท็บเล็ตได้ ============ -->
+<meta name="theme-color" content="#0a0f1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IoT Farm">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAFdklEQVR42u3dLXIcRxiH8dHUksRVAT6BJWJgYIEwI58gIDh3WCLsMhbZCwQZB/gEuUCADAxM5IuoSkFybTa7o+6d6Z7++D1IVdqdj+5H/3175tXsxYuXrx6HTFzffh/QH3c3l9n2dZFSaAIjt+CLCz0l8bcPb81mh7z++CWb3IsJfUxkAiNU8KXEni30ocgkxhy554o9S+h9mYmMpcSeI/VZQhMZpYo9khklse/UOVfJRjKjJamDS46nDRMZa5QgoeXHSGbUkNahST2SGS1JPZIZLUk9hiwAgZKYcnMM/csASknp6IRWaqDW0mMkM1qSejQ8aIlROqOllJbQaDOhpTNaSGkJjXZraKAJoZUbaKXskNBQcgCEBjJw8e7Px0f1M2rn6T9bJDSUHAChAUIDhAahAUIDhAZSsjEEy/Lm0/uo13/942+DRug65Q3dBskJXZXEMfsgN6GrFXlqv8QmdNUiE5vQTYpMbEI3KTKxw3AdukKZaz9mQhOD1EqOvmRQgkjoJpOt97QeyezcCG3CnSOhTbRzJbQJds6EhkWhpHLuhDahxoDQJtJYEBogtHTucEy0jy7Iw/3uvEm42ho8Qq+bROfKG7qtlJK/+fS+2SYmCb2CwOfsT4p3XEMvmc4P97vsMuc4jlZraQldQC0cs7/910rtDoSekzwxYi0p07FthRzL02vOPZYWa2kJHSFyzkTc39dzxzdXbEJ3JHMJkoTK/XC/617qpoSOKTdqEHnquE4df2xat1Z2dHnre0rmzdW2ipR77jhLuDIjoVcWucoJnEjsHmvrsXeZa0nkOYndU1qPvcvc3Edu51I3I/SpBWFPMp8rdUt3DZtO6FNNPz3UlKfOs/Wk3vQm89qLz9zHtLna/u94Wr5e3azQhxOZagLnJl6OP7xcY0HoTFIvPYGpP7ZTyJdqLAhdyAKpRJGn9rnEeXSxdhiwuMiH4vzz++cfP//6129nbVsDEqGziTxHssP36qwj9CoypxJKZ908PJcjUuac17E1IEnopCKvvbDVgCShZ8tc0p1FDUgdCT2nSb22fo+lpdbg30MtVvhHuBKD0EFy1NS8dHisJLcobEIGIhM66wLz+na39zsiEjpicbNWs/o5C7ISOuA8aAaLXFk4tR2pTeiqRSY2oVcvO0Jk3hfyWLddSBNSaqlbfEa0hF5Q5hgBQ5qQNCDF0+R16FTJk+r2+Bq3tD3BH7MSOWZ7+jIkdJYEynVXLvV+Wk1nCV1AKq+9HwmtljYmhAYILZGMBaFJ3fcYjCbUuRMaILSkcs7p2fQ4wTl7ph/ud/9p8B+GLZkldJ0TPfUcDTITuqoJf+4xXmQmdDUTH/M93WRWQycRoPYvznGtXUI3IwSZCd2MGGRWciQvQY5989Sx1xCZ0NWIPSX1HJmJTOjVxD4m9bkyE5nQRYi9udpOfmkQkQldzCIs1aU+EhO6mCsMsZKTl9DVSU7gfLgODUIDhAYIDRAahAYIDRAaIDRAaBAaIDRAaIDQAKFBaIDQAKEBQgOEBqEBQgOEBggNEBqEBggNEBqYi4c1ZuCnn38xCBIaIDQIDRAaIDRAaIDQ6Fbou5vLYRiG4fXHL0YDVfLk7t3NpYSGkgMgNJBNaHU0WqifJTSUHEAVQis7UHu5IaHRdskhpVFzOktotL8olNKoNZ1PJjSpUaPMQSUHqVGazFElx2FKA6Ux5eYY8kYpjdJLjeCSg9SoReYgoUmNWmQehmG4ePHy1WPoxq9vv//4+duHt0YbWRaAMeu5qBsr+xuW1ihN5mihSY2SZY4uOZQgKFXkRYQ+lJrYmCPyXJkXEfqU2ORGqMRLiLy40FNiE5zAIWuyIoUOlRv9krKtIqnQBEdqgQ/5F0cv1cCwVSjdAAAAAElFTkSuQmCC">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<script>
+// สร้าง Web App Manifest ตอนรันบนเบราว์เซอร์ (แบบไฟล์เดียว ไม่ต้องมีไฟล์ manifest.json แยก)
+// start_url ใช้ URL ปัจจุบันของหน้านี้ ทำให้กดไอคอนบนหน้าจอหลักแล้วเปิดกลับมาที่หน้านี้พอดี
+(function(){
+  try {
+    var manifest = {
+      name: "IoT Farm Dashboard",
+      short_name: "IoT Farm",
+      description: "แดชบอร์ดควบคุมฟาร์ม ESP32-C3 + ESP8266",
+      start_url: location.href,
+      display: "standalone",
+      orientation: "any",
+      background_color: "#0b1220",
+      theme_color: "#0a0f1a",
+      icons: [
+        { src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAF8ElEQVR42u3dMXLUSBiGYVnlZJcqAk6AnRAQ4GAzIk6wwcbcwYljitiJL7AR8QacgAtsYAICEnwRqrzJUjWIGakldbda3c+bgWEktb63/79HPZ6zJ8+eP3aZubp96IAh9zcX2Y95lkMAgUepQiQTQOixBxmiChAa+q/vXrmj+IUX7z9nlyGaAGPhF3jEFiKWBKsFOBV8oUcOGdaKsEqAY+EXfOQWYY0EiwQQfNQiQi/82CPHMrfkncdZFWB4AMFHidVgTiXohR+1VYM5laAXfrQsQS/8aFmCXvjRsgT90hcG9iLBIgEOzRF+7FmCsSrQh7Q+wN45lel+jklAba1Qr/VBy61Qr/VBy61Qr/VBy61Qb3jQMr3eHy2vBVQAqABA0wJof9BqG6QCQAUACAA0yNnrvx8f9f9oicPPEKsA0AIBBAAIABAAIABAAIAAQL2cG4L0vPzwZtH/+/L2k8EjQDuBn3odQhCg+tCHHoMMBGgi9GQggOAHng8RCNBU8IlAAMEnwio8B6gs/LWcuwogPKqBCiD8rokAguLaCCAgrpEAguFaCSAQrpkAguDaCSAAxoAAbryxIIAbbkwIABDATGdsCOAGGyMCAAQw+xurUWyHzsD3b3fLbs7ltcEjwH5mtKVBn/t6OcR4+eFNE58hUAEKC/3cY6oSBMg++28R+i1kaKEKqAAF9/Jzj/fj36sKBIg2+88NYczwHXutkPOJWRVqrwIqwMrg555th8ebOk9VYRwPwhaG//zyuohQhZ5HSesWFaDQ9mcqJCXPoofnduo6llaDmtsgFSAg/KXM9rGqgmpgDRAc/F3f3P/P/9g1WhuoAFWHP/RaWq8GvfDvu92J0Ra1LEGVAowtgL9/u9t0j02p1WBsXJa+qUAAs75qYBFcfvi3Xm9sdV7nl9cnF8itTAhNvwuU6ibHmEWPvUaK8z0lgQpQYdhT7pzMEaJU5596bKwBCpvxY97gqcVjShliHjfF2KgAFbc9a3v6f//6+NOf//jnz0WvH/OBVosPxewGTRT8tWGy65MAuwt/yvCFbHb78TMSEKCa4I8dL/auzxaxG3RF+Ld+gGbXJwE2CX9pT4492SVA1vAX28+SgABdt/5LoU89hd1DT33qPNdK4BNhLb9TsMPFpAUwAaKEZ89BquU6ko6RIah7BhV8FQBorwJ8efupuE8xHS5Er27vBj8rd9b2m+EQJfRL/o8WhgBNhJ4M1gBVlO6UD522eKDl16MjWjgPZ/CxzwNM7fZUDQhQ1GI49i/YCv09n6klaOErkrwNmij8sbZO2OhGgGJnspx7hlLt8Wl59lcBIoRybbuzh2MSQBWYDGTOIKY+ZiuzvwqQaFau9ZgEUAWMEQHcYGNDAIAAZjpjQgA33FgQwI03BgQQANe+O+wG7bb59NjV7cPgb66FXwVoYzYc+95e4SdA1RKE7PUXfgJUKUFIwFNKIPwEaDYowm8RvCgwe/+CaMFXAZoNkPCrAE1WA8EnQJEihHwp9Zp9/oJPgOJFGJNgafgFnwCbtxpzZDgmwdzwCz0Bdi3D/c3FT38eflG20BOgChnWrBkEngBVCiHs5eA5AAgAEAAgAEAAgAAAAQACAAQACAAQACAAQACAAAABAAIABAAIABAAIABAAIAAAAEAAgAEAAgAEAAgAEAAgABATvx69I347fenBkEFAAgAEAAgAEAAgAAAAQACACkFOPzG8hfvPxsRVM1hxu9vLlQAaIEAAgDNCmAdgBb7fxUAKoAhAAG0QWiw/VEBoAKEGAPUMvuPCnBYGoAaGWa8H/sHqgBq7f2D1wAkQI2tz6gAWiHU3vpMVgCtEGpufYJbIBKgxtYnSIChOSTA3sI/1c5PVgASoNbwB7dAJECN4Z+1BiABagt/13Xd2ZNnzx/nHOzq9uGXv/v67pW7gCIWu3Pfwp+9Ge7YAVQD7DH8iyqAaoAagh9FgFMSEAE5gr82/FEEmBKBDIgd+hjBjy7AlASEwJrApwh/dAGWyADkDn0WAciAUkOfXQBCoJTAD/kPJFz8NqJGQjcAAAAASUVORK5CYII=", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: "data:image/png;base64,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", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+      ]
+    };
+    var blob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+    var link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = URL.createObjectURL(blob);
+    document.head.appendChild(link);
+  } catch(e) { console.warn("manifest init failed", e); }
+})();
+</script>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#141c2e; --panel2:#0f1727; --border:#243248;
+    --blue:#3b9dff; --teal:#22d3c4; --amber:#f6b93b; --red:#ef4b4b; --green:#3fbf6f;
+    --text:#e7ecf5; --sub:#8ea0bd;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;overflow-x:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#0a0f1a;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+  .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:600}
+  .brand .chip{width:26px;height:26px;border-radius:6px;background:var(--blue);flex-shrink:0}
+  .hdr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{border:1px solid var(--border);background:#111a2c;color:var(--text);padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;max-width:100%}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#04203f}
+  .btn.warn{background:var(--amber);border-color:var(--amber);color:#402a00}
+  .btn.danger{background:var(--red);border-color:var(--red);color:#3a0000}
+  .status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
+  .status-dot.off{background:var(--red)}
+  main{padding:24px 28px;max-width:1400px;margin:0 auto}
+
+  .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:4px}
+  .tab{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);cursor:pointer;font-size:14px;color:var(--sub);white-space:nowrap;flex-shrink:0}
+  .tab.active{background:var(--panel);color:var(--text);border-color:var(--blue)}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+  @media(max-width:1100px){.grid3{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.grid3,.grid4{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;min-width:0}
+  .card h3{margin:0 0 10px;font-size:13px;letter-spacing:.3px;color:var(--sub);font-weight:600}
+  .card .value{font-size:34px;font-weight:700;margin:2px 0}
+  .card .unit{color:var(--sub);font-size:13px}
+
+  .node-card{border-top:3px solid var(--border)}
+  .node-card.online{border-top-color:var(--green)}
+  .node-card.offline{border-top-color:var(--red);opacity:.6}
+  .node-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .node-title{font-weight:600;font-size:15px}
+  .node-badge{font-size:11px;padding:3px 8px;border-radius:20px;background:#0d3320;color:var(--green)}
+  .node-badge.off{background:#3a1414;color:var(--red)}
+  .metric-row{display:flex;justify-content:space-between;font-size:13px;color:var(--sub);padding:4px 0;border-bottom:1px dashed var(--border)}
+  .metric-row span.v{color:var(--text);font-weight:600}
+  .node-actions{display:flex;gap:8px;margin-top:12px}
+  .node-actions .btn{flex:1;font-size:12px;padding:7px 6px;text-align:center}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+  .panel-title{font-size:16px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+
+  .relay-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  @media(max-width:900px){.relay-grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:480px){.relay-grid{grid-template-columns:repeat(2,1fr)}}
+  .relay-cell{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+  .relay-cell h4{margin:0 0 8px;font-size:13px;color:var(--sub)}
+  .relay-toggle{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#1a2436;color:var(--sub);font-weight:700;cursor:pointer;letter-spacing:1px}
+  .relay-toggle.on{background:var(--green);border-color:var(--green);color:#042b13}
+  .auto-status{margin-top:6px;padding:4px 6px;border-radius:6px;font-size:11px;font-weight:600;text-align:center}
+  .auto-status.on{background:rgba(63,191,111,.15);color:var(--green);border:1px solid rgba(63,191,111,.4)}
+  .auto-status.off{background:rgba(239,75,75,.12);color:var(--red);border:1px solid rgba(239,75,75,.35)}
+  .mode-pill{display:flex;margin-top:8px;border:1px solid var(--border);border-radius:20px;overflow:hidden;font-size:11px}
+  .mode-pill div{flex:1;padding:5px 0;cursor:pointer;color:var(--sub)}
+  .mode-pill div.active{background:var(--blue);color:#04203f}
+  .gear{margin-top:8px;font-size:11px;color:var(--sub);cursor:pointer;text-decoration:underline}
+
+  .settings-box{margin-top:10px;text-align:left;font-size:12px;background:#0c1424;border:1px solid var(--border);border-radius:8px;padding:10px;display:none}
+  .settings-box.show{display:block}
+  .settings-box label{display:block;color:var(--sub);margin-top:8px;margin-bottom:3px}
+  .settings-box select,.settings-box input{width:100%;background:#111a2c;border:1px solid var(--border);color:var(--text);padding:5px 6px;border-radius:6px;font-size:12px}
+  .settings-box .row2{display:flex;gap:6px}
+  .settings-box .save{margin-top:10px;width:100%;background:var(--blue);border:none;color:#04203f;padding:7px;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px}
+  .sub-fields{margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)}
+  .day-row{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 8px}
+  .day-chip{display:flex;align-items:center;gap:3px;background:#111a2c;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:11px;color:var(--sub);cursor:pointer}
+  .day-chip input{margin:0;width:12px;height:12px}
+  .sched-block{background:#0c1424;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px}
+  .sched-head{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px;color:var(--text);cursor:pointer}
+  .sched-head input{width:14px;height:14px}
+  .sched-sub-label{display:block;font-size:10px;letter-spacing:.5px;color:var(--sub);margin:8px 0 4px;text-transform:uppercase}
+  .chip-row{display:flex;flex-wrap:wrap;gap:4px}
+  .chip{background:#111a2c;border:1px solid var(--border);color:var(--sub);border-radius:14px;padding:4px 9px;font-size:11px;cursor:pointer;user-select:none}
+  .chip.active{background:var(--blue);border-color:var(--blue);color:#04203f;font-weight:600}
+  .chip-sm{padding:4px 7px;min-width:14px;text-align:center}
+
+  .chart-wrap{height:220px;position:relative}
+  canvas{width:100%!important;height:100%!important}
+
+  .conn-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);margin-top:6px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:30px}
+
+  /* ---------------- App-like: มือถือ/แท็บเล็ต (PWA) ---------------- */
+  html{-webkit-tap-highlight-color:transparent}
+  body{overscroll-behavior-y:none;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)}
+  header{padding-top:calc(14px + env(safe-area-inset-top))}   /* กันชนรอยบาก/แถบสถานะ (iPhone notch, Android punch-hole) */
+  @media (hover:none) and (pointer:coarse){                   /* อุปกรณ์สัมผัส: ขยายพื้นที่กดให้นิ้วกดง่าย */
+    .btn,.tab,.pill,.relay-toggle,.mode-pill div,.chip,.gear{min-height:40px}
+    .tab{display:flex;align-items:center}
+    .chip{display:inline-flex;align-items:center;justify-content:center}
+    .settings-box input,.settings-box select{min-height:38px;font-size:16px}   /* 16px กัน iOS ซูมหน้าเองตอนแตะช่องกรอก */
+    input,select,textarea{font-size:16px}
+  }
+  /* แท็บเล็ต (ประมาณ 769-1100px): ใช้พื้นที่กว้างให้คุ้ม แต่ยังอ่านสบาย */
+  @media (min-width:769px) and (max-width:1100px){
+    main{padding:20px 20px}
+    .relay-grid{grid-template-columns:repeat(3,1fr)}
+    .grid-stats{grid-template-columns:1fr 1fr}
+    .chart-wrap{height:240px}
+  }
+  /* โหมดแอป (เปิดจากไอคอนหน้าจอหลัก): ซ่อนส่วนที่ไม่จำเป็น */
+  @media (display-mode:standalone){
+    footer{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+  }
+
+  /* ---------------- Responsive: ปรับตามขนาดจอของอุปกรณ์ ---------------- */
+  @media(max-width:768px){
+    header{padding:12px 16px}
+    .brand{font-size:17px}
+    main{padding:16px}
+    .card .value{font-size:26px}
+    .stats-title{font-size:18px}
+    .stats-sub{font-size:12px}
+    .stats-header{padding:16px}
+    .chart-wrap{height:200px}
+    .relay-cell{padding:10px}
+  }
+  @media(max-width:480px){
+    header{flex-direction:column;align-items:stretch}
+    .hdr-actions{justify-content:stretch}
+    .hdr-actions .btn, .hdr-actions input{flex:1;min-width:0}
+    .brand{font-size:16px;justify-content:center}
+    main{padding:12px}
+    .card{padding:14px}
+    .card .value{font-size:22px}
+    .panel{padding:14px}
+    .chart-wrap{height:180px}
+    .pill{padding:7px 12px;font-size:12px}
+    .grid-stats{gap:10px}
+    .stat-card{padding:12px}
+  }
+
+  /* ---------------- Statistics Pro ---------------- */
+  .stats-header{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center}
+  .stats-title{font-size:22px;font-weight:800;color:var(--text)}
+  .stats-sub{font-size:13px;color:var(--sub);margin-top:4px;margin-bottom:16px}
+  .pill-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .pill{background:#111a2c;color:var(--sub);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border)}
+  .pill.active{background:var(--blue);color:#04203f;border-color:var(--blue)}
+  .node-pill.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+  .grid-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:900px){.grid-stats{grid-template-columns:1fr}}
+  .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .stat-card h4{margin:0 0 10px;font-size:14px;font-weight:600}
+  .ai-btn{width:100%;margin-top:10px;background:#152238;color:#7db8ff;border:1px solid var(--border);padding:10px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer}
+  .ai-result{margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--text);background:#0c1424;border:1px solid var(--border);border-radius:8px;padding:10px;display:none}
+  .ai-result.show{display:block}
+  .ai-result .disclaimer{color:var(--sub);font-size:11px;margin-top:6px;display:block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="chip"></span> IoT Farm Gateway <span style="color:var(--sub);font-weight:400;font-size:13px">ESP32-C3 x4 + ESP8266</span></div>
+  <div class="hdr-actions">
+    <span style="font-size:13px;color:var(--sub)"><span class="status-dot" id="gwDot"></span><span id="gwStatus">กำลังเชื่อมต่อ...</span></span>
+    <span id="clockBox" style="font-size:13px;color:var(--text);font-weight:600;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:#111a2c">🕒 <span id="clockDate" style="color:var(--sub);font-weight:400">--/--/----</span> <span id="clockTime">--:--:--</span></span>
+    <input id="gwIp" placeholder="Gateway IP เช่น 192.168.1.50" class="btn" style="width:190px;max-width:100%">
+    <button class="btn primary" onclick="connectGateway()">เชื่อมต่อ</button>
+    <button class="btn warn" onclick="wifiResetGateway()">Reset WiFi (Gateway)</button>
+    <button class="btn primary" id="installBtn" style="display:none" onclick="installApp()">📲 ติดตั้งเป็นแอป</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview" onclick="showTab('overview')">ภาพรวม</div>
+    <div class="tab" data-tab="relay" onclick="showTab('relay')">ควบคุมรีเลย์ (6 ช่อง)</div>
+    <div class="tab" data-tab="chart" onclick="showTab('chart')">กราฟเรียลไทม์</div>
+    <div class="tab" data-tab="stats" onclick="showTab('stats')">📈 สถิติ (Statistics Pro)</div>
+    <div class="tab" data-tab="wifi" onclick="showTab('wifi')">ตั้งค่า WiFi ทุกบอร์ด</div>
+  </div>
+
+  <!-- ================= OVERVIEW ================= -->
+  <div id="tab-overview">
+    <div class="grid4" id="summaryCards">
+      <div class="card"><h3>อุณหภูมิเฉลี่ย (4 บอร์ด)</h3><div class="value" id="sumTemp" style="color:var(--blue)">--</div><div class="unit">°C</div></div>
+      <div class="card"><h3>ความชื้นอากาศเฉลี่ย</h3><div class="value" id="sumHum" style="color:var(--teal)">--</div><div class="unit">% RH</div></div>
+      <div class="card"><h3>VPD เฉลี่ย</h3><div class="value" id="sumVpd" style="color:var(--amber)">--</div><div class="unit">kPa</div></div>
+      <div class="card"><h3>ความชื้นดินเฉลี่ย</h3><div class="value" id="sumSoil" style="color:var(--green)">--</div><div class="unit">%</div></div>
+    </div>
+
+    <div class="panel-title" style="margin-bottom:10px">สถานะบอร์ดเซนเซอร์ (ESP32-C3)</div>
+    <div class="grid4" id="nodeCards"></div>
+  </div>
+
+  <!-- ================= RELAY ================= -->
+  <div id="tab-relay" style="display:none">
+    <div class="panel">
+      <div class="panel-title"><span>📍 ตำแหน่งฟาร์ม (สำหรับเงื่อนไข Weather-based)</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+        <div><label style="display:block;font-size:12px;color:var(--sub);margin-bottom:4px">ละติจูด (Lat)</label><input id="farmLat" type="number" step="0.0001" value="13.7563" class="btn" style="width:140px;max-width:45vw"></div>
+        <div><label style="display:block;font-size:12px;color:var(--sub);margin-bottom:4px">ลองจิจูด (Lon)</label><input id="farmLon" type="number" step="0.0001" value="100.5018" class="btn" style="width:140px;max-width:45vw"></div>
+        <button class="btn primary" onclick="saveFarmLocation()">บันทึกตำแหน่ง</button>
+        <span style="font-size:13px;color:var(--sub)" id="rainNowLabel">ปริมาณฝนปัจจุบัน: -</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Manual Output Control (Relay/Valve) — 6 ช่อง</div>
+      <div class="relay-grid" id="relayGrid"></div>
+    </div>
+  </div>
+
+  <!-- ================= CHART ================= -->
+  <div id="tab-chart" style="display:none">
+    <div class="panel">
+      <div class="panel-title">
+        <span>กราฟรายบอร์ด (Node 1-4)</span>
+        <select id="chartMetric" onchange="switchChartMetric()" style="background:#111a2c;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">
+          <option value="temp">อุณหภูมิ (°C)</option>
+          <option value="hum">ความชื้นอากาศ (%)</option>
+          <option value="vpd">VPD (kPa)</option>
+          <option value="soil">ความชื้นดิน (%)</option>
+        </select>
+      </div>
+      <div class="chart-wrap"><canvas id="envChartNodes"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span>ค่าเฉลี่ยรวมทั้ง 4 บอร์ด</span></div>
+      <div class="chart-wrap"><canvas id="envChartAvg"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ================= STATISTICS PRO ================= -->
+  <div id="tab-stats" style="display:none">
+    <div class="stats-header">
+      <div class="stats-title">📈 Statistics Pro</div>
+      <div class="stats-sub">กราฟวิเคราะห์แนวโน้มฟาร์ม</div>
+      <div class="pill-row">
+        <div class="pill" data-range="1h" onclick="setStatsRange('1h')">1 ชม.</div>
+        <div class="pill" data-range="24h" onclick="setStatsRange('24h')">24 ชม.</div>
+        <div class="pill" data-range="7d" onclick="setStatsRange('7d')">7 วัน</div>
+        <div class="pill" data-range="1m" onclick="setStatsRange('1m')">1 เดือน</div>
+        <div class="pill" data-range="1y" onclick="setStatsRange('1y')">1 ปี</div>
+      </div>
+      <div class="pill-row" style="margin-top:8px">
+        <div class="pill node-pill" data-node="1" onclick="setStatsNode('1')">Node 1</div>
+        <div class="pill node-pill" data-node="2" onclick="setStatsNode('2')">Node 2</div>
+        <div class="pill node-pill" data-node="3" onclick="setStatsNode('3')">Node 3</div>
+        <div class="pill node-pill" data-node="4" onclick="setStatsNode('4')">Node 4</div>
+        <div class="pill node-pill" data-node="avg" onclick="setStatsNode('avg')">ค่าเฉลี่ยรวม</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-title"><span>Google Apps Script URL</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input id="gasUrlInput" placeholder="วาง URL ของ Google Apps Script (ลงท้ายด้วย /exec)" class="btn" style="flex:1;min-width:0">
+        <button class="btn primary" onclick="connectGasUrl()">เชื่อมต่อ</button>
+      </div>
+      <div id="gasStatus" style="font-size:12px;color:var(--sub);margin-top:8px">ยังไม่ได้เชื่อมต่อ — ใส่ URL เดียวกับที่ตั้งไว้ในตัวแปร GAS_URL ของ Gateway</div>
+    </div>
+
+    <div class="grid-stats">
+      <div class="stat-card">
+        <h4>🌡️ อุณหภูมิ (°C)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statTemp"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('temp')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-temp"></div>
+      </div>
+      <div class="stat-card">
+        <h4>💧 ความชื้นอากาศ (%)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statHum"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('hum')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-hum"></div>
+      </div>
+      <div class="stat-card">
+        <h4>🪴 ความชื้นดิน (%)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statSoil"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('soil')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-soil"></div>
+      </div>
+      <div class="stat-card">
+        <h4>⚡ ความเครียดพืช (VPD &amp; SVP)</h4>
+        <div class="chart-wrap" style="height:200px"><canvas id="statVpdSvp"></canvas></div>
+        <button class="ai-btn" onclick="showAiAnalysis('vpdsvp')">🤖 ให้ AI ช่วยวิเคราะห์กราฟนี้</button>
+        <div class="ai-result" id="aiResult-vpdsvp"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= WIFI ================= -->
+  <div id="tab-wifi" style="display:none">
+    <div class="grid3" id="wifiCards"></div>
+
+    <div class="panel">
+      <div class="panel-title">วิธีตั้งค่า WiFi ใหม่ (WiFiManager)</div>
+      <p style="color:var(--sub);font-size:13px;line-height:1.7">
+        กดปุ่ม "ตั้งค่า WiFi ใหม่" ของบอร์ดที่ต้องการ หรือกดปุ่มจริงที่ตัวบอร์ดค้างไว้ 5 วินาที
+        บอร์ดจะรีสตาร์ทและเปิด Access Point ชื่อ <b>ESP32C3-Node-X</b> (สำหรับ node) หรือ
+        <b>ESP8266-Gateway</b> (สำหรับ gateway) ให้เชื่อมต่อจากมือถือ/คอมพิวเตอร์แล้วเลือก
+        WiFi บ้านที่ต้องการใช้งานผ่านหน้าเว็บที่เปิดขึ้นมาอัตโนมัติ
+      </p>
+    </div>
+  </div>
+
+  <footer>ESP32-C3 Sensor Nodes (x4) → ESP-NOW → ESP8266 Gateway → Google Sheets + Dashboard</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const RELAY_LABELS = ["ปั๊มน้ำโซน 1","ปั๊มน้ำโซน 2","พัดลมระบายอากาศ","ไฟปลูกพืช (Grow Light)","ม่านบังแดด","สำรอง"];
+let gatewayBase = "";
+let demoMode = true;
+let state = null;
+
+function showTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
+  ["overview","relay","chart","stats","wifi"].forEach(id=>{
+    document.getElementById("tab-"+id).style.display = (id===name)?"block":"none";
+  });
+  if(name==="stats") refreshStats();
+}
+
+function connectGateway(){
+  const ip = document.getElementById("gwIp").value.trim();
+  if(ip){ gatewayBase = "http://"+ip; demoMode = false; }
+  else { gatewayBase=""; demoMode = true; }
+  fetchData();
+  startHeartbeat();
+}
+
+// ---------------- Heartbeat: ป้องกันรีเลย์ค้างเปิดถ้าปิดหน้า Dashboard ทิ้งไว้ ----------------
+// ส่งสัญญาณบอก Gateway ทุก 10 วิว่า "หน้านี้ยังเปิดอยู่" ถ้า Gateway ไม่ได้รับ
+// เกิน 30 วิ (ปิดแท็บ/เบราว์เซอร์ค้าง/หลุดเน็ต) จะปิดรีเลย์โหมด Manual ให้เองอัตโนมัติ
+let heartbeatTimer = null;
+function startHeartbeat(){
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  heartbeatTimer = null;
+  if (demoMode) return;   // โหมดตัวอย่างไม่มี Gateway จริงให้ส่งหา
+  heartbeatTimer = setInterval(()=>{
+    fetch(gatewayBase + "/api/heartbeat", {method:"POST"}).catch(()=>{});
+  }, 10000);
+}
+
+// เมื่อปิดแท็บ/ปิดเบราว์เซอร์แบบปกติ ให้แจ้ง Gateway ปิดรีเลย์ Manual ทันที ไม่ต้องรอ 30 วิ
+window.addEventListener("beforeunload", ()=>{
+  if (!demoMode && gatewayBase && navigator.sendBeacon) {
+    navigator.sendBeacon(gatewayBase + "/api/close");
+  }
+});
+
+function wifiResetGateway(){
+  if(demoMode){ alert("โหมดตัวอย่าง: ใส่ IP ของ ESP8266 Gateway ก่อนเพื่อสั่งงานจริง"); return; }
+  fetch(gatewayBase+"/api/wifi/reset",{method:"POST"}).then(()=>alert("สั่งรีเซ็ต WiFi ของ Gateway แล้ว"));
+}
+
+function nodeWifiReset(id){
+  alert("กดปุ่มบนตัวบอร์ด Node "+id+" ค้างไว้ 5 วินาที เพื่อเข้าสู่โหมดตั้งค่า WiFi (AP: ESP32C3-Node-"+id+")");
+}
+
+// ---------------- ดึงข้อมูลจริงจาก Gateway หรือใช้ demo mock ----------------
+async function fetchData(){
+  if(!demoMode){
+    try{
+      const res = await fetch(gatewayBase+"/api/data",{cache:"no-store"});
+      state = await res.json();
+      setGwStatus(true);
+    }catch(e){
+      setGwStatus(false);
+      return;
+    }
+  } else {
+    state = mockData();
+    setGwStatus(true,"โหมดตัวอย่าง (demo)");
+  }
+  render();
+}
+
+function setGwStatus(ok,label){
+  document.getElementById("gwDot").classList.toggle("off",!ok);
+  document.getElementById("gwStatus").textContent = label || (ok ? "เชื่อมต่อ Gateway สำเร็จ" : "ขาดการเชื่อมต่อ Gateway");
+}
+
+// ---------------- นาฬิกา: ใช้เวลาที่ซิงก์ NTP จาก Gateway เป็นหลัก ----------------
+// ระหว่างรอข้อมูลรอบถัดไป (ทุก 5 วิ) จะเดินนาฬิกาต่อเองด้วย setInterval ทุก 1 วิ
+// เพื่อให้ตัวเลขไม่ค้าง แล้วพอ fetch รอบใหม่มาค่อย sync ให้ตรงกับ Gateway อีกที
+let clockBase = null;      // เวลา (ms) ของ Gateway ที่ fetch มาล่าสุด
+let clockBaseAt = 0;       // เวลาบนเบราว์เซอร์ตอนที่ fetch สำเร็จ (ใช้คำนวณส่วนต่าง)
+
+// แปลงวันที่จาก "YYYY-MM-DD" (รูปแบบที่ Gateway ส่งมา ใช้เก็บใน Google Sheets ด้วย)
+// เป็น "DD-MM-YYYY" สำหรับแสดงผลบน Dashboard เท่านั้น ไม่กระทบข้อมูลที่บันทึกจริง
+function formatDateDMY(dateStr){
+  if(!dateStr) return "";
+  const parts = dateStr.split("-");
+  if(parts.length !== 3) return dateStr;
+  const [y, m, d] = parts;
+  return `${d}-${m}-${y}`;
+}
+
+function syncClockFromServer(timeStr, dateStr){
+  if(!timeStr || timeStr === "--:--:--"){
+    document.getElementById("clockTime").textContent = "--:--:--";
+    document.getElementById("clockDate").textContent = dateStr ? formatDateDMY(dateStr) : "--/--/----";
+    clockBase = null;
+    return;
+  }
+  const [h,m,s] = timeStr.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h,m,s,0);
+  clockBase = d.getTime();
+  clockBaseAt = Date.now();
+  document.getElementById("clockDate").textContent = formatDateDMY(dateStr);
+}
+
+function tickClock(){
+  if(clockBase === null) return;
+  const now = new Date(clockBase + (Date.now() - clockBaseAt));
+  document.getElementById("clockTime").textContent = now.toTimeString().slice(0,8);
+}
+setInterval(tickClock, 1000);
+
+function mockData(){
+  const now = new Date();
+  const nowStr = now.toTimeString().slice(0,8);
+  const nodes = [1,2,3,4].map(i=>{
+    const t = 24+Math.random()*4, h=55+Math.random()*15;
+    return {id:i, online: i!==4, temp:t, hum:h, vpd:(0.61*Math.exp(17.27*t/(t+237.3))*(1-h/100)), soil: 10+Math.random()*40, lastUpdate: i!==4 ? nowStr : "--:--:--",
+      mac: i!==4 ? `AA:BB:CC:DD:EE:0${i}` : null, ip: i!==4 ? `192.168.1.${100+i}` : null, rssi: i!==4 ? -50-i*5 : null};
+  });
+  const online = nodes.filter(n=>n.online);
+  const avg = k => online.reduce((a,n)=>a+n[k],0)/online.length;
+  const defaultSchedules = () => [0,1,2,3].map(()=>({
+    enabled:false, startHour:6, startMinute:0, startSecond:0,
+    stopHour:18, stopMinute:0, stopSecond:0,
+    dayOfWeekMask:0, dayOfMonthMask:0, monthMask:0
+  }));
+  if(!window._relayState) window._relayState = RELAY_LABELS.map((_,i)=>({
+    state:i===0, mode: i<2?"auto":"manual", autoSub:"sensor",
+    sensorType:"soil", min:30, max:70, rangeMode:false, workAtMin:true,
+    schedules: defaultSchedules(),
+    workWhenNoRain:true, rainThreshold:0.2
+  }));
+  return {
+    wifi:true, onlineCount: online.length, nodes,
+    average:{temp:avg("temp"),hum:avg("hum"),vpd:avg("vpd"),soil:avg("soil")},
+    weather:{lat: window._farmLat ?? 13.7563, lon: window._farmLon ?? 100.5018, rainMm: window._mockRain ?? 0},
+    relays: window._relayState.map((r,i)=>({ch:i+1,...r})),
+    gatewayMac: "AA:BB:CC:DD:EE:01", gatewayIp: "192.168.1.50", gatewayRssi: -48,
+    time: nowStr,
+    date: now.toISOString().slice(0,10)
+  };
+}
+
+function render(){
+  if(!state) return;
+  syncClockFromServer(state.time, state.date);
+  document.getElementById("sumTemp").textContent = state.average.temp.toFixed(1);
+  document.getElementById("sumHum").textContent  = state.average.hum.toFixed(1);
+  document.getElementById("sumVpd").textContent  = state.average.vpd.toFixed(2);
+  document.getElementById("sumSoil").textContent = state.average.soil.toFixed(1);
+
+  if(state.weather){
+    document.getElementById("rainNowLabel").textContent = `ปริมาณฝนปัจจุบัน: ${state.weather.rainMm.toFixed(2)} มม.`;
+    const latEl = document.getElementById("farmLat"), lonEl = document.getElementById("farmLon");
+    if(document.activeElement !== latEl) latEl.value = state.weather.lat;
+    if(document.activeElement !== lonEl) lonEl.value = state.weather.lon;
+  }
+
+  const nc = document.getElementById("nodeCards");
+  nc.innerHTML = state.nodes.map(n=>`
+    <div class="card node-card ${n.online?'online':'offline'}">
+      <div class="node-head">
+        <span class="node-title">Node ${n.id}</span>
+        <span class="node-badge ${n.online?'':'off'}">${n.online?'ONLINE':'OFFLINE'}</span>
+      </div>
+      <div class="metric-row"><span>อุณหภูมิ</span><span class="v">${n.temp.toFixed(1)} °C</span></div>
+      <div class="metric-row"><span>ความชื้นอากาศ</span><span class="v">${n.hum.toFixed(1)} %</span></div>
+      <div class="metric-row"><span>VPD</span><span class="v">${n.vpd.toFixed(2)} kPa</span></div>
+      <div class="metric-row" style="border-bottom:none"><span>ความชื้นดิน</span><span class="v">${n.soil.toFixed(1)} %</span></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:6px">อัปเดตล่าสุด: ${n.lastUpdate || '--:--:--'} <span style="color:#586a89">(เวลาเดียวกับ Gateway)</span></div>
+      <div class="node-actions">
+        <button class="btn" onclick="nodeWifiReset(${n.id})">ตั้งค่า WiFi</button>
+      </div>
+    </div>`).join("");
+
+  // ถ้ากำลังเปิดกล่องตั้งค่าเงื่อนไข Auto ของช่องใดอยู่ ให้ข้ามการ render รีเลย์ใหม่
+  // (ป้องกันไม่ให้ข้อมูลที่พึ่ง fetch มาทุก 5 วิ มาเขียนทับ DOM จนกล่องตั้งค่าปิดไปเอง
+  // หรือค่าที่ผู้ใช้กำลังกรอกอยู่หายไปก่อนกดบันทึก)
+  if (openSettingsCh === null) {
+    renderRelays();
+  }
+  renderWifiCards();
+  pushChartPoint(state);
+}
+
+const DAY_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];   // bit0=อาทิตย์ ... bit6=เสาร์
+const pad2 = n => String(n).padStart(2,"0");
+
+// สร้าง HTML ของกล่องตาราง "Sched N" หนึ่งกล่อง (checkbox, start/stop, days of week)
+// s = ข้อมูลตารางนั้น (มาจาก Gateway หรือค่า default)
+const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function renderScheduleBlock(ch, idx, s){
+  const dow = s.dayOfWeekMask ?? 0;
+  const dom = s.dayOfMonthMask ?? 0;
+  const mon = s.monthMask ?? 0;
+  return `
+    <div class="sched-block">
+      <label class="sched-head"><input type="checkbox" id="sched-${ch}-${idx}-enabled" ${s.enabled?'checked':''}> Sched ${idx+1}</label>
+      <div class="row2">
+        <div style="flex:1"><label>Start</label><input type="time" step="1" id="sched-${ch}-${idx}-start" value="${pad2(s.startHour||0)}:${pad2(s.startMinute||0)}:${pad2(s.startSecond||0)}"></div>
+        <div style="flex:1"><label>Stop</label><input type="time" step="1" id="sched-${ch}-${idx}-stop" value="${pad2(s.stopHour||0)}:${pad2(s.stopMinute||0)}:${pad2(s.stopSecond||0)}"></div>
+      </div>
+      <label class="sched-sub-label">DAYS OF WEEK</label>
+      <div class="chip-row">
+        ${DAY_LABELS.map((d,i)=>`<div class="chip ${maskBit(dow,i)?'active':''}" onclick="toggleChipBit(this,'sched-${ch}-${idx}-dow',${i})">${d}</div>`).join("")}
+      </div>
+      <input type="hidden" id="sched-${ch}-${idx}-dow" value="${dow}">
+      <label class="sched-sub-label">DAYS OF MONTH</label>
+      <div class="chip-row">
+        ${Array.from({length:31},(_,i)=>i+1).map(d=>`<div class="chip chip-sm ${maskBit(dom,d-1)?'active':''}" onclick="toggleChipBit(this,'sched-${ch}-${idx}-dom',${d-1})">${d}</div>`).join("")}
+      </div>
+      <input type="hidden" id="sched-${ch}-${idx}-dom" value="${dom}">
+      <label class="sched-sub-label">MONTHS OF YEAR</label>
+      <div class="chip-row">
+        ${MONTH_LABELS.map((mo,i)=>`<div class="chip ${maskBit(mon,i)?'active':''}" onclick="toggleChipBit(this,'sched-${ch}-${idx}-mon',${i})">${mo}</div>`).join("")}
+      </div>
+      <input type="hidden" id="sched-${ch}-${idx}-mon" value="${mon}">
+    </div>`;
+}
+
+// บิตใน mask ว่าง (0) = ไม่จำกัด ให้ถือว่าทุก chip "ยังไม่ถูกเลือก" แสดงผลได้ตามจริง (ไม่บังคับ active)
+function maskBit(mask, bit){ return mask !== 0 && ((mask >> bit) & 1) === 1; }
+
+// สลับ active ของ chip ที่กด แล้วอัปเดตค่า mask ใน hidden input ที่เกี่ยวข้อง
+function toggleChipBit(el, hiddenId, bit){
+  el.classList.toggle("active");
+  const hidden = document.getElementById(hiddenId);
+  let mask = parseInt(hidden.value, 10) || 0;
+  mask = el.classList.contains("active") ? (mask | (1<<bit)) : (mask & ~(1<<bit));
+  hidden.value = mask;
+}
+
+function renderRelays(){
+  const grid = document.getElementById("relayGrid");
+  grid.innerHTML = state.relays.map(r=>`
+    <div class="relay-cell">
+      <h4>CH ${r.ch}<br><span style="font-size:11px;color:var(--sub)">${RELAY_LABELS[r.ch-1]}</span></h4>
+      <button class="relay-toggle ${r.state?'on':''}" onclick="toggleRelay(${r.ch})">${r.state?'ON':'OFF'}</button>
+      ${r.mode==='auto' ? `<div class="auto-status ${r.state?'on':'off'}">Auto กำลัง${r.state?'เปิด':'ปิด'}อยู่</div>` : ''}
+      <div class="mode-pill">
+        <div class="${r.mode==='auto'?'active':''}" onclick="setRelayMode(${r.ch},'auto')">AUTO</div>
+        <div class="${r.mode==='manual'?'active':''}" onclick="setRelayMode(${r.ch},'manual')">MANUAL</div>
+      </div>
+      <div class="gear" onclick="toggleSettings(${r.ch}, event)">ตั้งค่าเงื่อนไข Auto</div>
+      <div class="settings-box" id="settings-${r.ch}">
+        <label>รูปแบบการทำงานอัตโนมัติ</label>
+        <select id="autoSub-${r.ch}" onchange="toggleAutoSubFields(${r.ch})">
+          <option value="sensor" ${r.autoSub==='sensor'?'selected':''}>ตามค่าเซนเซอร์ (Sensor-based)</option>
+          <option value="schedule" ${r.autoSub==='schedule'?'selected':''}>ตามเวลา (Time-based)</option>
+          <option value="weather" ${r.autoSub==='weather'?'selected':''}>ตามสภาพอากาศ (Weather-based)</option>
+        </select>
+
+        <div class="sub-fields" id="fields-sensor-${r.ch}" style="display:${r.autoSub==='sensor'?'block':'none'}">
+          <label>เซนเซอร์ที่ใช้</label>
+          <select id="sensorType-${r.ch}">
+            <option value="temp" ${r.sensorType==='temp'?'selected':''}>อุณหภูมิ (°C)</option>
+            <option value="hum" ${r.sensorType==='hum'?'selected':''}>ความชื้นอากาศ (%)</option>
+            <option value="vpd" ${r.sensorType==='vpd'?'selected':''}>VPD (kPa)</option>
+            <option value="soil" ${r.sensorType==='soil'?'selected':''}>ความชื้นดิน (%)</option>
+          </select>
+          <div class="row2">
+            <div style="flex:1"><label>ค่าต่ำสุด</label><input type="number" id="min-${r.ch}" value="${r.min}"></div>
+            <div style="flex:1"><label>ค่าสูงสุด</label><input type="number" id="max-${r.ch}" value="${r.max}"></div>
+          </div>
+          <label>รูปแบบเงื่อนไข</label>
+          <select id="rangeMode-${r.ch}">
+            <option value="1" ${r.rangeMode?'selected':''}>ทำงานเมื่อค่าอยู่ในช่วง Min-Max (เช่น 30-40°C เปิดพัดลม)</option>
+            <option value="0" ${!r.rangeMode?'selected':''}>Hysteresis: เปิดที่ Min ปิดที่ Max (เช่น รดน้ำเมื่อดินแห้ง)</option>
+          </select>
+        </div>
+
+        <div class="sub-fields" id="fields-schedule-${r.ch}" style="display:${r.autoSub==='schedule'?'block':'none'}">
+          <div style="font-size:11px;color:var(--sub);margin-bottom:6px">ไม่เลือกวัน/วันที่/เดือนใด = ไม่จำกัด (ทำงานได้ทุกค่าในหมวดนั้น) เปิดใช้ได้สูงสุด 4 ตาราง (Sched) ต่อ 1 ช่อง</div>
+          ${(r.schedules || [{},{},{},{}]).map((s,i)=>renderScheduleBlock(r.ch, i, s)).join("")}
+        </div>
+
+        <div class="sub-fields" id="fields-weather-${r.ch}" style="display:${r.autoSub==='weather'?'block':'none'}">
+          <label>เงื่อนไข</label>
+          <select id="workWhenNoRain-${r.ch}">
+            <option value="1" ${r.workWhenNoRain?'selected':''}>ทำงานเมื่อฝนไม่ตก (เช่น รดน้ำอัตโนมัติ)</option>
+            <option value="0" ${!r.workWhenNoRain?'selected':''}>ทำงานเมื่อฝนตก</option>
+          </select>
+          <label>เกณฑ์ปริมาณฝนที่ถือว่า "ตก" (มม.)</label>
+          <input type="number" step="0.1" id="rainThreshold-${r.ch}" value="${r.rainThreshold}">
+          <div style="font-size:11px;color:var(--sub);margin-top:6px">ปริมาณฝนปัจจุบัน: ${state.weather ? state.weather.rainMm.toFixed(2) : '-'} มม. (ตั้งพิกัดฟาร์มด้านบนกริดนี้)</div>
+        </div>
+
+        <button class="save" onclick="saveRelaySettings(${r.ch})">บันทึกการตั้งค่า</button>
+      </div>
+    </div>`).join("");
+}
+
+function toggleAutoSubFields(ch){
+  const sub = document.getElementById("autoSub-"+ch).value;
+  ["sensor","schedule","weather"].forEach(k=>{
+    document.getElementById(`fields-${k}-${ch}`).style.display = (k===sub) ? "block" : "none";
+  });
+}
+
+// ---------------- เปิด/ปิดกล่องตั้งค่าเงื่อนไข Auto ----------------
+// เปิดได้ทีละกล่องเท่านั้น และจะไม่ปิดเองระหว่างที่ยังใช้งานอยู่ในกล่อง
+// จะปิดก็ต่อเมื่อ: กดปุ่มลูกศร (gear) ของช่องเดิมซ้ำ หรือคลิกนอกกล่องตั้งค่าเท่านั้น
+let openSettingsCh = null;
+
+function toggleSettings(ch, evt){
+  if (evt) evt.stopPropagation();   // กันไม่ให้ click นี้ไปโดน listener ปิดกล่องที่ผูกกับ document
+  const wasOpen = (openSettingsCh === ch);
+
+  document.querySelectorAll(".settings-box.show").forEach(el => el.classList.remove("show"));
+
+  if (wasOpen) {
+    openSettingsCh = null;
+  } else {
+    openSettingsCh = ch;
+    const box = document.getElementById("settings-" + ch);
+    if (box) box.classList.add("show");
+  }
+}
+
+// คลิกที่ไหนก็ได้นอกกล่องตั้งค่าที่เปิดอยู่ -> ปิดกล่องนั้น
+document.addEventListener("click", (e) => {
+  if (openSettingsCh === null) return;
+  const box = document.getElementById("settings-" + openSettingsCh);
+  if (box && !box.contains(e.target)) {
+    box.classList.remove("show");
+    openSettingsCh = null;
+    renderRelays();   // กลับมาอัปเดตข้อมูลรีเลย์ตามปกติหลังปิดกล่องแล้ว
+  }
+});
+
+function renderWifiCards(){
+  const wc = document.getElementById("wifiCards");
+  const items = [{
+      name:"ESP8266 Gateway", ap:"ESP8266-Gateway",
+      mac: state.gatewayMac, ip: state.gatewayIp, rssi: state.gatewayRssi
+    }]
+    .concat(state.nodes.map(n=>({
+      name:"Node "+n.id+" (ESP32-C3)", ap:"ESP32C3-Node-"+n.id, id:n.id,
+      mac: n.mac, ip: n.ip, rssi: n.rssi
+    })));
+  wc.innerHTML = items.map(it=>`
+    <div class="card">
+      <h3>${it.name}</h3>
+      <div class="conn-line"><span class="status-dot"></span> AP ตั้งค่า: ${it.ap}</div>
+      <div class="metric-row"><span>MAC Address</span><span class="v">${it.mac ?? '-'}</span></div>
+      <div class="metric-row"><span>IP Address</span><span class="v">${it.ip ?? '-'}</span></div>
+      <div class="metric-row" style="border-bottom:none"><span>สัญญาณ WiFi (RSSI)</span><span class="v">${it.rssi!=null? it.rssi+' dBm' : '-'}</span></div>
+      <button class="btn warn" style="margin-top:12px;width:100%" onclick="${it.id? 'nodeWifiReset('+it.id+')':'wifiResetGateway()'}">ตั้งค่า WiFi ใหม่</button>
+    </div>`).join("");
+}
+
+function toggleRelay(ch){
+  if(demoMode){
+    const r = window._relayState[ch-1]; r.state = !r.state; r.mode="manual";
+    render(); return;
+  }
+  const cur = state.relays.find(r=>r.ch===ch);
+  fetch(gatewayBase+"/api/relay",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ch, mode:"manual", state: !cur.state})})
+    .then(fetchData)
+    .catch(()=>alert("สั่งงานรีเลย์ไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+function setRelayMode(ch,mode){
+  if(demoMode){
+    window._relayState[ch-1].mode = mode; render(); return;
+  }
+  fetch(gatewayBase+"/api/relay",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ch, mode})})
+    .then(fetchData)
+    .catch(()=>alert("เปลี่ยนโหมดไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+function saveRelaySettings(ch){
+  const autoSub = document.getElementById("autoSub-"+ch).value;
+  const payload = { ch, autoSub };
+
+  if (autoSub === "sensor") {
+    payload.sensorType = document.getElementById("sensorType-"+ch).value;
+    payload.min = parseFloat(document.getElementById("min-"+ch).value);
+    payload.max = parseFloat(document.getElementById("max-"+ch).value);
+    payload.rangeMode = document.getElementById("rangeMode-"+ch).value === "1";
+  } else if (autoSub === "schedule") {
+    payload.schedules = [0,1,2,3].map(i=>{
+      const [sh,sm,ss] = document.getElementById(`sched-${ch}-${i}-start`).value.split(":").map(Number);
+      const [eh,em,es] = document.getElementById(`sched-${ch}-${i}-stop`).value.split(":").map(Number);
+      return {
+        enabled: document.getElementById(`sched-${ch}-${i}-enabled`).checked,
+        startHour: sh||0, startMinute: sm||0, startSecond: ss||0,
+        stopHour: eh||0, stopMinute: em||0, stopSecond: es||0,
+        dayOfWeekMask: parseInt(document.getElementById(`sched-${ch}-${i}-dow`).value,10) || 0,
+        dayOfMonthMask: parseInt(document.getElementById(`sched-${ch}-${i}-dom`).value,10) || 0,
+        monthMask: parseInt(document.getElementById(`sched-${ch}-${i}-mon`).value,10) || 0
+      };
+    });
+  } else if (autoSub === "weather") {
+    payload.workWhenNoRain = document.getElementById("workWhenNoRain-"+ch).value === "1";
+    payload.rainThreshold = parseFloat(document.getElementById("rainThreshold-"+ch).value);
+  }
+
+  const closeAndRefresh = () => {
+    openSettingsCh = null;          // ปิดกล่องตั้งค่าหลังบันทึกสำเร็จ แล้วกลับมา render ตามปกติ
+    fetchData();
+  };
+
+  if(demoMode){
+    Object.assign(window._relayState[ch-1], payload);
+    closeAndRefresh(); return;
+  }
+  fetch(gatewayBase+"/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)})
+    .then(closeAndRefresh)
+    .catch(()=>alert("บันทึกการตั้งค่าไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+function saveFarmLocation(){
+  const lat = parseFloat(document.getElementById("farmLat").value);
+  const lon = parseFloat(document.getElementById("farmLon").value);
+  if(demoMode){
+    window._farmLat = lat; window._farmLon = lon; window._mockRain = Math.random()*2;
+    render(); return;
+  }
+  fetch(gatewayBase+"/api/weather/location",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({lat,lon})})
+    .then(fetchData)
+    .catch(()=>alert("บันทึกตำแหน่งฟาร์มไม่สำเร็จ: เชื่อมต่อ Gateway ไม่ได้ (เช็ค IP หรือ WiFi)"));
+}
+
+// ---------------- กราฟ: เก็บประวัติของทุกบอร์ด + ค่าเฉลี่ยไว้ทั้งหมด ----------------
+// แล้วค่อยเลือกสร้างเส้นกราฟตามเมตริกที่ผู้ใช้เลือกจาก dropdown (ไม่ต้อง fetch ใหม่ตอนสลับ)
+// ช่องที่ 1 (chartNodes): เส้นของ Node 1-4 ตามเมตริกที่เลือก
+// ช่องที่ 2 (chartAvg): เส้นค่าเฉลี่ยรวมทั้ง 4 เมตริกพร้อมกันเสมอ (ไม่มี dropdown)
+let chartNodes, chartAvg;
+let currentMetric = "temp";
+const METRIC_LABELS = { temp:"อุณหภูมิ (°C)", hum:"ความชื้นอากาศ (%)", vpd:"VPD (kPa)", soil:"ความชื้นดิน (%)" };
+const NODE_COLORS = { 1:"#3b9dff", 2:"#22d3c4", 3:"#f6b93b", 4:"#ef4b4b" };
+
+const chartHistory = {
+  labels: [],
+  nodes: { 1:{temp:[],hum:[],vpd:[],soil:[]}, 2:{temp:[],hum:[],vpd:[],soil:[]},
+           3:{temp:[],hum:[],vpd:[],soil:[]}, 4:{temp:[],hum:[],vpd:[],soil:[]} },
+  avg: { temp:[], hum:[], vpd:[], soil:[] }
+};
+const CHART_MAX_POINTS = 30;
+
+function pushChartPoint(fullState){
+  const t = new Date().toLocaleTimeString();
+  chartHistory.labels.push(t);
+
+  fullState.nodes.forEach(n=>{
+    const metrics = ["temp","hum","vpd","soil"];
+    metrics.forEach(m=>{
+      // ถ้าบอร์ด offline ให้ใส่ null เพื่อให้กราฟเว้นช่องว่างแทนการลากเส้นค่าเดิมซ้ำ
+      chartHistory.nodes[n.id][m].push(n.online ? n[m] : null);
+    });
+  });
+  chartHistory.avg.temp.push(fullState.average.temp);
+  chartHistory.avg.hum.push(fullState.average.hum);
+  chartHistory.avg.vpd.push(fullState.average.vpd);
+  chartHistory.avg.soil.push(fullState.average.soil);
+
+  if(chartHistory.labels.length > CHART_MAX_POINTS){
+    chartHistory.labels.shift();
+    for(let i=1;i<=4;i++){ ["temp","hum","vpd","soil"].forEach(m=>chartHistory.nodes[i][m].shift()); }
+    ["temp","hum","vpd","soil"].forEach(m=>chartHistory.avg[m].shift());
+  }
+
+  updateCharts();
+}
+
+// ช่องที่ 1: เส้นของ Node 1-4 ตามเมตริกที่เลือก
+function buildNodeDatasets(metric){
+  return [1,2,3,4].map(id=>({
+    label: "Node "+id,
+    data: chartHistory.nodes[id][metric],
+    borderColor: NODE_COLORS[id],
+    tension: .3, pointRadius: 0, borderWidth: 1.5, spanGaps: false
+  }));
+}
+
+// ช่องที่ 2: ค่าเฉลี่ยรวมทั้ง 4 เมตริกพร้อมกันเสมอ
+function buildAvgDatasets(){
+  return [
+    {label:"Temp (°C)",  data:chartHistory.avg.temp, borderColor:"#3b9dff", tension:.3, pointRadius:0, borderWidth:1.5},
+    {label:"Humidity (%)",data:chartHistory.avg.hum,  borderColor:"#22d3c4", tension:.3, pointRadius:0, borderWidth:1.5},
+    {label:"VPD (kPa)",  data:chartHistory.avg.vpd,  borderColor:"#f6b93b", tension:.3, pointRadius:0, borderWidth:1.5},
+    {label:"Soil (%)",   data:chartHistory.avg.soil, borderColor:"#3fbf6f", tension:.3, pointRadius:0, borderWidth:1.5}
+  ];
+}
+
+function updateCharts(){
+  if(chartNodes){
+    chartNodes.data.labels = chartHistory.labels;
+    chartNodes.data.datasets = buildNodeDatasets(currentMetric);
+    chartNodes.options.scales.y.title.text = METRIC_LABELS[currentMetric];
+    chartNodes.update();
+  }
+  if(chartAvg){
+    chartAvg.data.labels = chartHistory.labels;
+    chartAvg.data.datasets = buildAvgDatasets();
+    chartAvg.update();
+  }
+}
+
+function switchChartMetric(){
+  currentMetric = document.getElementById("chartMetric").value;
+  updateCharts();
+}
+
+function initCharts(){
+  const ctxNodes = document.getElementById("envChartNodes").getContext("2d");
+  chartNodes = new Chart(ctxNodes,{
+    type:"line",
+    data:{labels:chartHistory.labels, datasets:buildNodeDatasets(currentMetric)},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}},
+        y:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"},title:{display:true,text:METRIC_LABELS[currentMetric],color:"#8ea0bd"}}
+      },
+      plugins:{legend:{labels:{color:"#e7ecf5"}}}}
+  });
+
+  const ctxAvg = document.getElementById("envChartAvg").getContext("2d");
+  chartAvg = new Chart(ctxAvg,{
+    type:"line",
+    data:{labels:chartHistory.labels, datasets:buildAvgDatasets()},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}}, y:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}}},
+      plugins:{legend:{labels:{color:"#e7ecf5"}}}}
+  });
+}
+
+initCharts();
+fetchData();
+setInterval(fetchData, 5000);
+
+// =====================================================================
+// Statistics Pro: กราฟย้อนหลังของ Node 1-4 / ค่าเฉลี่ยรวม ตามช่วงเวลาที่เลือก
+// ดึงข้อมูลตรงจาก Google Apps Script (ไม่ผ่าน Gateway เพราะ Gateway ไม่ได้
+// เก็บประวัติระยะยาว) — ต้องใส่ URL เดียวกับ GAS_URL ในโค้ด ESP8266 ก่อน
+// =====================================================================
+let gasUrl = "";
+let statsRange = "1h";
+let statsNode = "1";
+let statsData = { labels:[], temp:[], hum:[], vpd:[], soil:[], svp:[] };
+let statTempChart, statHumChart, statSoilChart, statVpdSvpChart;
+
+function connectGasUrl(){
+  const url = document.getElementById("gasUrlInput").value.trim();
+  gasUrl = url;
+  const statusEl = document.getElementById("gasStatus");
+  if (!url) {
+    statusEl.textContent = "ยังไม่ได้เชื่อมต่อ — ใส่ URL เดียวกับที่ตั้งไว้ในตัวแปร GAS_URL ของ Gateway";
+    refreshStats();
+    return;
+  }
+  statusEl.textContent = "กำลังทดสอบการเชื่อมต่อ...";
+  fetch(url).then(r=>r.json()).then(()=>{
+    statusEl.textContent = "✅ เชื่อมต่อ Google Apps Script สำเร็จ";
+    refreshStats();
+  }).catch(()=>{
+    statusEl.textContent = "❌ เชื่อมต่อไม่สำเร็จ (เช็ค URL หรือว่า Deploy เป็น \"Anyone\" หรือยัง) — ใช้ข้อมูลตัวอย่างแทนไปก่อน";
+    refreshStats();
+  });
+}
+
+function setStatsRange(r){
+  statsRange = r;
+  document.querySelectorAll('.pill[data-range]').forEach(p=>p.classList.toggle('active', p.dataset.range===r));
+  refreshStats();
+}
+function setStatsNode(n){
+  statsNode = n;
+  document.querySelectorAll('.pill[data-node]').forEach(p=>p.classList.toggle('active', p.dataset.node===n));
+  refreshStats();
+}
+
+// ตั้งค่าเริ่มต้นให้ปุ่ม "1 ชม." และ "Node 1" เป็นค่า active ตอนเปิดหน้า
+function initStatsPills(){
+  document.querySelectorAll('.pill[data-range]').forEach(p=>p.classList.toggle('active', p.dataset.range===statsRange));
+  document.querySelectorAll('.pill[data-node]').forEach(p=>p.classList.toggle('active', p.dataset.node===statsNode));
+}
+
+async function refreshStats(){
+  if (gasUrl) {
+    try {
+      const res = await fetch(`${gasUrl}?action=history&node=${statsNode}&range=${statsRange}`);
+      statsData = await res.json();
+    } catch(e) {
+      statsData = generateMockHistory(statsRange);
+    }
+  } else {
+    statsData = generateMockHistory(statsRange);
+  }
+  renderStatCharts();
+}
+
+// สร้างข้อมูลตัวอย่างไว้พรีวิวหน้าตา ก่อนที่จะเชื่อมต่อ Google Apps Script จริง
+function generateMockHistory(range){
+  const POINTS = { "1h":12, "24h":24, "7d":7, "1m":30, "1y":12 };
+  const n = POINTS[range] || 12;
+  const labels=[], temp=[], hum=[], vpd=[], soil=[], svp=[];
+  let t=25,h=60,s=35;
+  for(let i=0;i<n;i++){
+    t += (Math.random()-0.5)*1.2; h += (Math.random()-0.5)*3; s += (Math.random()-0.5)*2;
+    const svpVal = 0.6108*Math.exp(17.27*t/(t+237.3));
+    const vpdVal = svpVal*(1-h/100);
+    labels.push(range==="1h"||range==="24h" ? `${(i).toString().padStart(2,'0')}:00` : `${i+1}`);
+    temp.push(+t.toFixed(1)); hum.push(+h.toFixed(1)); soil.push(+Math.max(0,Math.min(100,s)).toFixed(1));
+    vpd.push(+vpdVal.toFixed(2)); svp.push(+svpVal.toFixed(2));
+  }
+  return {labels,temp,hum,vpd,soil,svp};
+}
+
+function renderStatCharts(){
+  const lineOpt = (yTitle)=>({responsive:true,maintainAspectRatio:false,
+    scales:{x:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"}}, y:{ticks:{color:"#8ea0bd"},grid:{color:"#243248"},title:{display:!!yTitle,text:yTitle,color:"#8ea0bd"}}},
+    plugins:{legend:{display:false}}});
+
+  if(!statTempChart){
+    statTempChart = new Chart(document.getElementById("statTemp"), {type:"line",
+      data:{labels:statsData.labels, datasets:[{data:statsData.temp, borderColor:"#ef4b4b", tension:.3, pointRadius:0, borderWidth:2}]},
+      options: lineOpt("°C")});
+    statHumChart = new Chart(document.getElementById("statHum"), {type:"line",
+      data:{labels:statsData.labels, datasets:[{data:statsData.hum, borderColor:"#22d3c4", tension:.3, pointRadius:0, borderWidth:2}]},
+      options: lineOpt("%")});
+    statSoilChart = new Chart(document.getElementById("statSoil"), {type:"line",
+      data:{labels:statsData.labels, datasets:[{data:statsData.soil, borderColor:"#a1662f", tension:.3, pointRadius:0, borderWidth:2}]},
+      options: lineOpt("%")});
+    statVpdSvpChart = new Chart(document.getElementById("statVpdSvp"), {type:"line",
+      data:{labels:statsData.labels, datasets:[
+        {label:"VPD", data:statsData.vpd, borderColor:"#a855f7", tension:.3, pointRadius:0, borderWidth:2},
+        {label:"SVP", data:statsData.svp, borderColor:"#3fbf6f", tension:.3, pointRadius:0, borderWidth:2}
+      ]},
+      options: {...lineOpt("kPa"), plugins:{legend:{display:true,labels:{color:"#e7ecf5"}}}}});
+  } else {
+    statTempChart.data.labels = statsData.labels; statTempChart.data.datasets[0].data = statsData.temp; statTempChart.update();
+    statHumChart.data.labels  = statsData.labels; statHumChart.data.datasets[0].data  = statsData.hum;  statHumChart.update();
+    statSoilChart.data.labels = statsData.labels; statSoilChart.data.datasets[0].data = statsData.soil; statSoilChart.update();
+    statVpdSvpChart.data.labels = statsData.labels;
+    statVpdSvpChart.data.datasets[0].data = statsData.vpd;
+    statVpdSvpChart.data.datasets[1].data = statsData.svp;
+    statVpdSvpChart.update();
+  }
+
+  // ปิดผลวิเคราะห์เก่าทุกครั้งที่เปลี่ยนช่วงเวลา/บอร์ด เพราะข้อมูลเปลี่ยนแล้ว
+  document.querySelectorAll(".ai-result").forEach(el=>el.classList.remove("show"));
+}
+
+// ---------------- วิเคราะห์แนวโน้มกราฟ (สรุปสถิติเบื้องต้นจากข้อมูลจริง) ----------------
+// หมายเหตุสำคัญ: นี่คือการวิเคราะห์เชิงสถิติที่คำนวณในเบราว์เซอร์ ไม่ใช่การเรียกใช้
+// โมเดล AI ภายนอกจริง ๆ เพราะไฟล์นี้เป็นหน้าเว็บที่รันในเครือข่ายท้องถิ่นแบบออฟไลน์
+// การเชื่อมต่อ AI (เช่น Claude API) จำเป็นต้องมีเซิร์ฟเวอร์กลางเก็บ API key อย่างปลอดภัย
+// (เบราว์เซอร์ฝังกุญแจ API ตรง ๆ ในหน้าเว็บสาธารณะไม่ได้ เสี่ยงต่อการรั่วไหล)
+// ถ้าต้องการเชื่อมต่อ AI จริงในอนาคต แจ้งได้เลย จะช่วยต่อเข้ากับ backend ให้
+function analyzeSeries(data, unit){
+  const valid = data.filter(v=>v!==null && v!==undefined && !isNaN(v));
+  if(valid.length < 2) return "ข้อมูลยังไม่เพียงพอสำหรับวิเคราะห์แนวโน้มในช่วงเวลานี้";
+  const avg = valid.reduce((a,b)=>a+b,0)/valid.length;
+  const min = Math.min(...valid), max = Math.max(...valid);
+  const diff = valid[valid.length-1] - valid[0];
+  const range = max-min || 1;
+  const trend = Math.abs(diff) < range*0.08 ? "ค่อนข้างคงที่ตลอดช่วง"
+    : (diff>0 ? "มีแนวโน้ม<b>เพิ่มขึ้น</b>" : "มีแนวโน้ม<b>ลดลง</b>");
+  return `ค่าเฉลี่ยในช่วงนี้อยู่ที่ <b>${avg.toFixed(1)} ${unit}</b> (ต่ำสุด ${min.toFixed(1)}, สูงสุด ${max.toFixed(1)}) `
+    + `ข้อมูล${trend} จากจุดเริ่มต้นถึงล่าสุด (เปลี่ยนแปลง ${diff>=0?'+':''}${diff.toFixed(1)} ${unit})`;
+}
+
+function showAiAnalysis(key){
+  const el = document.getElementById("aiResult-"+key);
+  let html = "";
+  if(key==="temp") html = analyzeSeries(statsData.temp, "°C");
+  else if(key==="hum") html = analyzeSeries(statsData.hum, "%");
+  else if(key==="soil") html = analyzeSeries(statsData.soil, "%");
+  else if(key==="vpdsvp") html = "VPD: " + analyzeSeries(statsData.vpd, "kPa") + "<br><br>SVP: " + analyzeSeries(statsData.svp, "kPa");
+
+  el.innerHTML = html + `<span class="disclaimer">* วิเคราะห์เบื้องต้นจากค่าสถิติในข้อมูลจริงที่ดึงมา ไม่ใช่ผลจากโมเดล AI ภายนอก</span>`;
+  el.classList.add("show");
+}
+
+initStatsPills();
+
+// ---------------- ติดตั้งเป็นแอป (PWA) ----------------
+// Android/Chrome/Edge: เบราว์เซอร์ยิง beforeinstallprompt มาให้ -> โชว์ปุ่ม "ติดตั้งเป็นแอป"
+// iPhone/iPad (Safari): ไม่มีอีเวนต์นี้ ต้องกด Share > Add to Home Screen เอง -> โชว์คำแนะนำแทน
+let deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById("installBtn").style.display = "inline-block";
+});
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  document.getElementById("installBtn").style.display = "none";
+});
+function installApp(){
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(()=>{ deferredInstallPrompt = null; document.getElementById("installBtn").style.display = "none"; });
+}
+(function iosHint(){
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isStandalone = window.navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+  if (isIos && !isStandalone) {
+    const b = document.getElementById("installBtn");
+    b.style.display = "inline-block";
+    b.onclick = () => alert("วิธีติดตั้งบน iPhone/iPad:\n1) แตะปุ่ม แชร์ (ไอคอนสี่เหลี่ยมมีลูกศรขึ้น) ใน Safari\n2) เลือก \"เพิ่มไปยังหน้าจอโฮม\" (Add to Home Screen)\n3) กด เพิ่ม");
+  }
+})();
+</script>
+</body>
+</html>
